@@ -1,13 +1,18 @@
 <template>
   <div class="sidebar">
-    <div class="selfie"></div>
-    <div :class="{ hidden: isHidden }">
+    <el-image
+      src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+      class="nav-image"
+    ></el-image>
+    <div :class="{ hidden: isHidden }" class="like-date">
       <el-button id="button1" @click="dating()" type="primary">like</el-button>
       <el-button id="button1" @click="dating()" type="primary"
         >dislike</el-button
       >
       <br />
-      <el-button id="button1" @click="dating()" type="primary">date</el-button>
+      <el-button id="button1" @click="dating()" type="success" class="date-btn"
+        >date</el-button
+      >
     </div>
     <el-menu
       :default-active="this.$router.path"
@@ -110,7 +115,7 @@ export default {
   display: block;
   position: absolute;
   left: 10%;
-  top: 350px;
+  top: 85px;
   bottom: 0;
 }
 
@@ -124,5 +129,21 @@ export default {
 
 .sidebar-el-menu {
   border: 0 !important;
+  margin-top: 20px;
+}
+
+.nav-image {
+  margin: 30px;
+  border-radius: 5px;
+}
+
+.like-date {
+  margin-left: 30px;
+}
+
+.date-btn {
+  /* margin: 0 5px; */
+  margin-top: 20px;
+  width: 180px;
 }
 </style>
