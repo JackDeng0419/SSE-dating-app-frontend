@@ -1,0 +1,64 @@
+/* receive: a user object */
+
+<template>
+  <el-card :body-style="{ padding: '0px' }" class="user-card">
+    <div @click="checkProfile" class="avatar-name">
+      <img class="avatar" v-bind:src="userObject.avatar" />
+      <span>{{ fullName }}</span>
+    </div>
+    <div style="padding: 14px;">
+      <div class="bottom clearfix">
+        <div class="age-gender">
+          {{ userObject.age }}, {{ userObject.gender }}
+        </div>
+        <div class="location">
+          {{ userObject.location }}
+        </div>
+      </div>
+    </div>
+  </el-card>
+</template>
+
+<script>
+export default {
+  props: {
+    userObject: {
+      default: {}
+    }
+  },
+  methods: {
+    checkProfile() {
+      console.log("check profile");
+      this.$router.push("/my-profile/" + this.userObject.userId);
+    }
+  },
+  computed: {
+    fullName() {
+      return this.userObject.firstName + " " + this.userObject.lastName;
+    }
+  }
+};
+</script>
+
+<style scoped>
+.user-card {
+  width: 180px;
+  margin-right: 30px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+.avatar {
+  border-radius: 50%;
+  width: 160px;
+  padding: 20px 0;
+}
+
+.user-card:hover {
+  background-color: rgb(225, 216, 252);
+  border-color: rgb(225, 216, 252);
+}
+
+.avatar-name {
+  cursor: pointer;
+}
+</style>
