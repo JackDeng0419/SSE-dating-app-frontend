@@ -3,11 +3,10 @@
     <div class="selfie"></div>
     <div :class="{ hidden: isHidden }">
       <el-button id="button1" @click="dating()" type="primary">like</el-button>
-      <el-button id="button1" @click="dating()" type="primary"
-        >dislike</el-button
-      >
+      <el-button id="button1" @click="dating()" type="primary">dislike</el-button>
       <br />
       <el-button id="button1" @click="dating()" type="primary">date</el-button>
+      <el-button id="button1" @click="message()" type="primary">message</el-button>
     </div>
     <el-menu
       :default-active="this.$router.path"
@@ -71,15 +70,19 @@ export default {
   data: function() {
     return {
       isHidden: true,
-      profileIndex: "/my-profile/" + this.$store.getters.getUserId
+      profileIndex: "/my-profile/" + sessionStorage.getItem("userid")
     };
   },
   created() {
-    this.profileIndex = "/my-profile/" + this.$store.getters.getUserId;
+    this.profileIndex = "/my-profile/" + sessionStorage.getItem("userid");
   },
   methods: {
     dating() {
       this.$parent.dating_visible_state = true;
+    },
+    message(){
+      console.log(this.$parent.$children[2]);
+      this.$parent.$children[2].chat_visible = true;
     }
   },
   watch: {
@@ -90,7 +93,7 @@ export default {
           const id = string[2];
 
           // if is current user id, set isHidden to true
-          this.isHidden = id === this.$store.getters.getUserId.toString();
+          this.isHidden = id === sessionStorage.getItem("userid");
         }
       } else {
         // if is in other nav, set isHidden to true

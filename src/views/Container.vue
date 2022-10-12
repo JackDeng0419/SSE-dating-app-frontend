@@ -2,7 +2,7 @@
   <div class="home">
     <head-bar />
     <side-bar />
-
+    <chat />
     <div class="content-box">
       <router-view />
       <!-- <el-backtop target=".content"></el-backtop> -->
@@ -53,9 +53,7 @@
       </el-form>
       <!-- 取消，确定按钮点击事件 -->
       <span slot="footer">
-        <el-button size="mini" @click="dating_visible_state = false"
-          >cancel</el-button
-        >
+        <el-button size="mini" @click="dating_visible_state = false">cancel</el-button>
         <el-button size="mini" @click="signup()">confirm</el-button>
       </span>
     </el-dialog>
@@ -64,12 +62,14 @@
 
 <script>
 import { getLoginStatus } from "@/api/user";
+import chat from "@/components/chat";
 import SideBar from "@/components/SideBar";
 import HeadBar from "@/components/HeadBar";
 
 export default {
   name: "Container",
   components: {
+    chat,
     HeadBar,
     SideBar
   },
@@ -85,16 +85,26 @@ export default {
     };
   },
   created() {
-    getLoginStatus().then(
-      () => {
+    this.$router.push({name: "my-profile"});
+    /*
+    pureget("/login/status").then((res)=>{
+      const RSA_key = res.data["data"].publickey;
+      sessionStorage.setItem("userid", res.data["data"].userid);
+      sessionStorage.setItem("username",res.data["data"].username);
+      sessionStorage.setItem("mobile_number", res.data["data"].mobile_number);
+      sessionStorage.setItem("email", res.data["data"].email);
+      this.$store.commit("setUserid", res.data["data"].userid);
+      pre_post("/login/encryption", RSA_key).then(()=>{
         if (this.$route.path === "/") {
-          this.$router.push({ name: "my-profile" });
+          this.$router.push("/my-profile/"+sessionStorage.getItem("userid"));
         }
-      },
-      () => {
-        this.$router.push({ name: "login" });
-      }
-    );
+      })
+    },(err)=>{
+      const RSA_key = err.response.data["data"].publickey;
+      pre_post("/login/encryption", RSA_key).then(()=>{
+        this.$router.push({name: "login"});
+      });
+    });*/
   }
 };
 </script>
