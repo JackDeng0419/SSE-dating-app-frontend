@@ -2,7 +2,7 @@
   <div>
     <container-title title="Search Mate" />
     <search-bar @queryWithFilter="queryWithFilter" />
-    <users-wall :userList="myDislikedUserList"></users-wall>
+    <users-wall :userList="userList"></users-wall>
   </div>
 </template>
 
@@ -20,7 +20,7 @@ export default {
   },
   data() {
     return {
-      myDislikedUserList: []
+      userList: []
     };
   },
   methods: {
@@ -33,54 +33,56 @@ export default {
     console.log("My likes mounted");
 
     // get user list
-    this.myDislikedUserList = await getUserList();
+    this.userList = await getUserList();
 
-    this.myDislikedUserList = [
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      }
-    ];
+    console.log(this.userList);
+
+    // this.userList = [
+    //   {
+    //     avatar:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //     username: "zhengjie-deng",
+    //     userId: "123456",
+    //     firstName: "Zhengjie",
+    //     lastName: "Deng",
+    //     age: "22",
+    //     gender: "Male",
+    //     location: "Adelaide"
+    //   },
+    //   {
+    //     avatar:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //     username: "zhengjie-deng",
+    //     userId: "123456",
+    //     firstName: "Zhengjie",
+    //     lastName: "Deng",
+    //     age: "22",
+    //     gender: "Male",
+    //     location: "Adelaide"
+    //   },
+    //   {
+    //     avatar:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //     username: "zhengjie-deng",
+    //     userId: "123456",
+    //     firstName: "Zhengjie",
+    //     lastName: "Deng",
+    //     age: "22",
+    //     gender: "Male",
+    //     location: "Adelaide"
+    //   },
+    //   {
+    //     avatar:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //     username: "zhengjie-deng",
+    //     userId: "123456",
+    //     firstName: "Zhengjie",
+    //     lastName: "Deng",
+    //     age: "22",
+    //     gender: "Male",
+    //     location: "Adelaide"
+    //   }
+    // ];
   }
 };
 </script>
