@@ -8,6 +8,7 @@
 <script>
 import ContainerTitle from "../components/ContainerTitle.vue";
 import UsersWall from "../components/UsersWall.vue";
+import { getMyLikesUserList } from "@/api/userList";
 
 export default {
   components: {
@@ -19,109 +20,18 @@ export default {
       myLikedUserList: []
     };
   },
-  mounted: function() {
+  mounted: async function() {
     console.log("My likes mounted");
-    this.myLikedUserList = [
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
+
+    const { data: result } = await getMyLikesUserList();
+    console.log(result);
+    if (result != null) {
+      if (result.code == 200) {
+        this.myLikedUserList = result.data;
+      } else {
+        this.$message.error(result.message);
       }
-    ];
+    }
   }
 };
 </script>

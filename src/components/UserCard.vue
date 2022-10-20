@@ -3,13 +3,19 @@
 <template>
   <el-card :body-style="{ padding: '0px' }" class="user-card">
     <div @click="checkProfile" class="avatar-name">
-      <img class="avatar" v-bind:src="userObject.avatar" />
+      <img
+        class="avatar"
+        v-bind:src="
+          userObject.avatar ||
+            'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+        "
+      />
       <span>{{ fullName }}</span>
     </div>
     <div style="padding: 14px;">
       <div class="bottom clearfix">
         <div class="age-gender">
-          {{ userObject.age }}, {{ userObject.gender }}
+          {{ userObject.age }}, {{ userObject.gender == 1 ? "Male" : "Female" }}
         </div>
         <div class="location">
           {{ userObject.location }}
