@@ -2,24 +2,22 @@ import Config from "./config";
 import axios from "axios";
 import qs from "qs";
 import crypto from "crypto";
-import { Buffer } from "buffer";
+import {Buffer} from "buffer";
 import router from "../router";
+
 axios.defaults.withCredentials = true;
 axios.interceptors.response.use(
   response => {
-    if(response.config.url !== Config.backEndUrl+'/login/RSA' && response.config.url !== Config.backEndUrl+'/login/AES'){
-      let new_body = {}
-      for(const dic_key in response.data){
-        console.log(response.data[dic_key])
-        new_body[dic_key] = AES_decrypt(response.data[dic_key])
+    if(response.config.url !== Config.backEndUrl+'/login/RSA'
+        && response.config.url !== Config.backEndUrl+'/login/AES'){
+      if(response.data.data!==null){
+        const plaintext = AES_decrypt(response.data.data)
+        response.data.data = JSON.parse(plaintext)
       }
-      response.data = new_body
     }
-    console.log("response============",response)
     return response;
   },
   error => {
-    console.log("error============",error)
     return Promise.reject(error)
   }
 );
@@ -38,14 +36,11 @@ export const get = async function (url, params) {
 
 export const post = async function (url, data) {
   await check();
-  let new_data = {};
-  for (const key in data) {
-    new_data[key] = AES_encrypt(data[key]);
-  }
-  const result = qs.stringify(new_data);
+  let new_data = JSON.stringify(data);
+  const result = {data: AES_encrypt(new_data)};
   return axios.post(Config.backEndUrl + url, result, {
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
+      "Content-Type": "application/json"
     }
   });
 };
@@ -92,18 +87,20 @@ export const check = async function () {
     await sessionStorage.setItem("AES_key", crypto.randomBytes(16).toString("base64"));
     await sessionStorage.setItem("AES_iv", crypto.randomBytes(12).toString("base64"));
     await pre_get("/login/RSA").then(async (res) => {
-      const RSA_key = res.data.public_key;
+      const RSA_key = res.data.data.public_key;
       await pre_post("/login/AES", RSA_key).then(async () => {
-        if (sessionStorage.getItem("userid") === null) {
-          await pre_get("/login/status").then((res) => {
-            sessionStorage.setItem("userid", res.data._uid)
-            sessionStorage.setItem("username", res.data.username)
-            sessionStorage.setItem("mobile_number", res.data.mobile_number)
-            sessionStorage.setItem("email", res.data.email)
-          }, () => {
+        await pre_get("/login/status").then((res) => {
+          console.log(res.data.code)
+          if(res.data.code===200){
+            sessionStorage.setItem("userid", res.data.data._uid)
+            sessionStorage.setItem("username", res.data.data.username)
+            sessionStorage.setItem("mobile_number", res.data.data.mobile_number)
+            sessionStorage.setItem("email", res.data.data.email)
+          }
+          else{
             router.push("/login")
-          })
-        }
+          }
+        })
       })
     });
   } else {
