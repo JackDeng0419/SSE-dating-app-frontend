@@ -6,7 +6,7 @@
       <el-form
         :model="formData"
         :rules="rules"
-        class="form-content"
+        class="login-form-content"
         label-width="0px"
         ref="form"
       >
@@ -33,9 +33,9 @@
         </el-form-item>
 
         <div class="login-btn">
-          <el-button @click="submit_login()" type="primary">confirm</el-button>
+          <el-button @click="submit_login()" type="primary">Confirm</el-button>
           <el-button @click="signup_visible_state = true" type="primary"
-            >signup</el-button
+            >Signup</el-button
           >
         </div>
       </el-form>
@@ -82,46 +82,52 @@
     </el-dialog>
 
     <el-dialog
-      title="signup"
+      title="Signup"
       :visible.sync="signup_visible_state"
-      width="6y00px"
+      width="600px"
       center
     >
-      <el-form :model="signup_form" ref="registerForm" label-width="80px">
-        <el-form-item prop="username">
-          <el-input
-            class="input_form"
-            placeholder="username"
-            v-model="signup_form.username"
-          >
+      <el-form :model="signup_form" ref="registerForm" label-width="120px">
+        <el-form-item prop="username" label="Username">
+          <el-input placeholder="username" v-model="signup_form.username">
           </el-input>
         </el-form-item>
 
-        <el-form-item prop="password">
-          <el-input
-            class="input_form"
-            placeholder="password"
-            v-model="signup_form.password"
-          >
+        <el-form-item prop="password" label="Password">
+          <el-input placeholder="password" v-model="signup_form.password">
           </el-input>
         </el-form-item>
 
-        <el-form-item prop="mobile_number">
+        <el-form-item prop="mobile_number" label="Mobile Number">
           <el-input
-            class="input_form"
             placeholder="mobile_number"
             v-model="signup_form.mobile_number"
           >
           </el-input>
         </el-form-item>
 
-        <el-form-item prop="email">
-          <el-input
-            class="input_form"
-            placeholder="email"
-            v-model="signup_form.email"
-          >
+        <el-form-item prop="email" label="Email">
+          <el-input placeholder="email" v-model="signup_form.email"> </el-input>
+        </el-form-item>
+        <el-form-item prop="first_name" label="First Name">
+          <el-input placeholder="first name" v-model="signup_form.first_name">
           </el-input>
+        </el-form-item>
+        <el-form-item prop="last_name" label="Last Name">
+          <el-input placeholder="last name" v-model="signup_form.last_name">
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="gender" class="register-gender" label="Gender">
+          <el-radio v-model="signup_form.gender" label="1">Male</el-radio>
+          <el-radio v-model="signup_form.gender" label="2">Female</el-radio>
+        </el-form-item>
+        <el-form-item prop="age" label="Age">
+          <el-input-number
+            v-model="signup_form.age"
+            controls-position="right"
+            :min="18"
+            :max="150"
+          ></el-input-number>
         </el-form-item>
       </el-form>
       <!-- 取消，确定按钮点击事件 -->
@@ -129,7 +135,7 @@
         <el-button size="mini" @click="signup_visible_state = false"
           >cancel</el-button
         >
-        <el-button size="mini" @click="submit_signup()">confirm</el-button>
+        <el-button size="mini" @click="submit_signup()">Confirm</el-button>
       </span>
     </el-dialog>
   </div>
@@ -156,7 +162,11 @@ export default {
         username: "",
         password: "",
         mobile_number: "",
-        email: ""
+        email: "",
+        first_name: "",
+        last_name: "",
+        gender: "",
+        age: 0
       },
       rules: {
         username: [
@@ -198,8 +208,16 @@ export default {
       );
     },
     submit_signup() {
-      signup(this.signup_form).then(() => {
+      // TODO: check null input
+      // TODO: hash the password
+      signup(this.signup_form).then(res => {
         this.signup_visible_state = false;
+        console.log(res);
+        if (res) {
+          if (res.data.code == 200) {
+            this.$message.success(res.data.message);
+          }
+        }
       });
     }
   }
@@ -252,7 +270,7 @@ export default {
   overflow: hidden;
 }
 
-.form-content {
+.login-form-content {
   padding: 45px 45px;
 }
 
@@ -270,14 +288,24 @@ export default {
   text-align: center;
 }
 
-.login-btn button {
-  border-radius: 30px;
+.login-btn > * {
+  border-radius: 60px;
   background: deeppink;
   width: 100%;
   height: 50px;
+  margin-bottom: 10px;
+  margin-left: 0;
+}
+
+.el-form-item > * {
+  width: 50%;
+}
+
+.register-gender {
+  margin-top: 10px;
 }
 
 .el-radio {
-  color: #fff;
+  color: black;
 }
 </style>
