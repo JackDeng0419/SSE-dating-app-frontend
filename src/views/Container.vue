@@ -2,7 +2,7 @@
   <div class="home">
     <head-bar />
     <side-bar />
-
+    <chat />
     <div class="content-box">
       <router-view />
       <!-- <el-backtop target=".content"></el-backtop> -->
@@ -53,9 +53,7 @@
       </el-form>
       <!-- 取消，确定按钮点击事件 -->
       <span slot="footer">
-        <el-button size="mini" @click="dating_visible_state = false"
-          >cancel</el-button
-        >
+        <el-button size="mini" @click="dating_visible_state = false">cancel</el-button>
         <el-button size="mini" @click="signup()">confirm</el-button>
       </span>
     </el-dialog>
@@ -63,13 +61,15 @@
 </template>
 
 <script>
-import { getLoginStatus } from "@/api/user";
+import chat from "@/components/chat";
 import SideBar from "@/components/SideBar";
 import HeadBar from "@/components/HeadBar";
+import {check} from "@/common/ajax";
 
 export default {
   name: "Container",
   components: {
+    chat,
     HeadBar,
     SideBar
   },
@@ -84,17 +84,11 @@ export default {
       }
     };
   },
-  created() {
-    getLoginStatus().then(
-      () => {
-        if (this.$route.path === "/") {
-          this.$router.push({ name: "my-profile" });
-        }
-      },
-      () => {
-        this.$router.push({ name: "login" });
-      }
-    );
+  async created() {
+    await check();
+    if(sessionStorage.getItem("userid")!==null){
+      await this.$router.push("/my-profile/" + sessionStorage.getItem("userid"))
+    }
   }
 };
 </script>
