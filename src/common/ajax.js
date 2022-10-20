@@ -7,36 +7,39 @@ import router from "../router";
 axios.defaults.withCredentials = true;
 axios.interceptors.response.use(
   response => {
-    if(response.config.url !== Config.backEndUrl+'/login/RSA' && response.config.url !== Config.backEndUrl+'/login/AES'){
-      let new_body = {}
-      for(const dic_key in response.data){
-        console.log(response.data[dic_key])
-        new_body[dic_key] = AES_decrypt(response.data[dic_key])
+    if (
+      response.config.url !== Config.backEndUrl + "/login/RSA" &&
+      response.config.url !== Config.backEndUrl + "/login/AES"
+    ) {
+      let new_body = {};
+      for (const dic_key in response.data) {
+        console.log(response.data[dic_key]);
+        new_body[dic_key] = AES_decrypt(response.data[dic_key]);
       }
-      response.data = new_body
+      response.data = new_body;
     }
-    console.log("response============",response)
+    console.log("response============", response);
     return response;
   },
   error => {
-    console.log("error============",error)
-    return Promise.reject(error)
+    console.log("error============", error);
+    return Promise.reject(error);
   }
 );
 
-export const pureget = async function (url) {
+export const pureget = async function(url) {
   await check();
   return axios.get(Config.backEndUrl + url);
 };
 
-export const get = async function (url, params) {
+export const get = async function(url, params) {
   await check();
   return axios.get(Config.backEndUrl + url, {
     params: params
   });
 };
 
-export const post = async function (url, data) {
+export const post = async function(url, data) {
   await check();
   let new_data = {};
   for (const key in data) {
@@ -50,14 +53,14 @@ export const post = async function (url, data) {
   });
 };
 
-export const del = async function (url, params) {
+export const del = async function(url, params) {
   await check();
   return axios.delete(Config.backEndUrl + url, {
     params: params
   });
 };
 
-export const put = async function (url, data) {
+export const put = async function(url, data) {
   await check();
   return axios.put(Config.backEndUrl + url, data, {
     headers: {
@@ -66,14 +69,14 @@ export const put = async function (url, data) {
   });
 };
 
-export const pre_get = function(url){
+export const pre_get = function(url) {
   return axios.get(Config.backEndUrl + url);
-}
+};
 
 export const pre_post = function(url, RSA_key) {
   const plain_key = Buffer.from(sessionStorage.getItem("AES_key"), "base64");
   const plain_iv = Buffer.from(sessionStorage.getItem("AES_iv"), "base64");
-  const publickey = Buffer.from(RSA_key,"utf8");
+  const publickey = Buffer.from(RSA_key, "utf8");
   const cipher_key = RSA_encrypt(plain_key, publickey).toString("base64");
   const cipher_iv = RSA_encrypt(plain_iv, publickey).toString("base64");
   let formData = {
@@ -87,40 +90,52 @@ export const pre_post = function(url, RSA_key) {
   });
 };
 
-export const check = async function () {
+export const check = async function() {
   if (sessionStorage.getItem("AES_key") === null) {
-    await sessionStorage.setItem("AES_key", crypto.randomBytes(16).toString("base64"));
-    await sessionStorage.setItem("AES_iv", crypto.randomBytes(12).toString("base64"));
-    await pre_get("/login/RSA").then(async (res) => {
+    await sessionStorage.setItem(
+      "AES_key",
+      crypto.randomBytes(16).toString("base64")
+    );
+    await sessionStorage.setItem(
+      "AES_iv",
+      crypto.randomBytes(12).toString("base64")
+    );
+    await pre_get("/login/RSA").then(async res => {
       const RSA_key = res.data.public_key;
       await pre_post("/login/AES", RSA_key).then(async () => {
         if (sessionStorage.getItem("userid") === null) {
-          await pre_get("/login/status").then((res) => {
-            sessionStorage.setItem("userid", res.data._uid)
-            sessionStorage.setItem("username", res.data.username)
-            sessionStorage.setItem("mobile_number", res.data.mobile_number)
-            sessionStorage.setItem("email", res.data.email)
-          }, () => {
-            router.push("/login")
-          })
+          await pre_get("/login/status").then(
+            res => {
+              sessionStorage.setItem("userid", res.data._uid);
+              sessionStorage.setItem("username", res.data.username);
+              sessionStorage.setItem("mobile_number", res.data.mobile_number);
+              sessionStorage.setItem("email", res.data.email);
+            },
+            () => {
+              router.push("/login");
+            }
+          );
         }
-      })
+      });
     });
   } else {
-    if(sessionStorage.getItem("userid") === null){
-      console.log("userid",sessionStorage.getItem("userid"))
-      pre_get("/login/status").then((res)=>{
-        sessionStorage.setItem("userid", res.data._uid)
-        sessionStorage.setItem("username", res.data.username)
-        sessionStorage.setItem("mobile_number", res.data.mobile_number)
-        sessionStorage.setItem("email", res.data.email)
-      },()=>{
-        router.push("/login")
-      })
+    if (sessionStorage.getItem("userid") === null) {
+      console.log("userid", sessionStorage.getItem("userid"));
+      pre_get("/login/status").then(
+        res => {
+          sessionStorage.setItem("userid", res.data._uid);
+          sessionStorage.setItem("username", res.data.username);
+          sessionStorage.setItem("mobile_number", res.data.mobile_number);
+          sessionStorage.setItem("email", res.data.email);
+        },
+        () => {
+          router.push("/login");
+        }
+      );
     }
-    console.log("userid",sessionStorage.getItem("userid"))
+    console.log("userid", sessionStorage.getItem("userid"));
   }
-}
+};
 
 export const AES_decrypt = function(ciphertext) {
   const key = Buffer.from(sessionStorage.getItem("AES_key"), "base64");
@@ -159,6 +174,6 @@ export const AES_encrypt = function(plaintext) {
 export const RSA_encrypt = function(plaintext, publickey) {
   return crypto.publicEncrypt(
     { key: publickey, padding: crypto.constants.RSA_PKCS1_PADDING },
-      plaintext
+    plaintext
   );
 };
