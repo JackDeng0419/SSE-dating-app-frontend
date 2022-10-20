@@ -184,7 +184,7 @@ export default {
             res => {
               if (Config.verify === true) {
                 this.verification_visible_state = true;
-                this.teleform.mobile_number = res.data.mobile_number;
+                this.teleform.mobile_number = res.data.data.mobile_number;
               } else {
                 this.$router.push({ name: "container" });
               }
