@@ -6,8 +6,6 @@ import "element-ui/lib/theme-chalk/index.css";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
-import { createToken } from "@/common/token";
-createToken();
 Vue.config.productionTip = false;
 Vue.use(ElementUI);
 Vue.use(VueClipboard);
@@ -25,7 +23,6 @@ tim.setLogLevel(0); // 普通级别，日志量较多，接入时建议使用
 // 注册 COS SDK 插件
 tim.registerPlugin({ "cos-js-sdk": COS });
 Vue.prototype.tim = tim;
-
 new Vue({
   router,
   store,

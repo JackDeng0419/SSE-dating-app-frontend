@@ -1,7 +1,7 @@
 import { post, pureget } from "@/common/ajax";
-export const match = formdata => post("/login/check", formdata);
+export const login = formdata => post("/login/login", formdata);
 
-export const login = code => post("/login/login", { code: code });
+export const verify = code => post("/login/verify", { code: code });
 
 export const signup = formdata => post("/login/signup", formdata);
 

@@ -61,10 +61,10 @@
 </template>
 
 <script>
-import { getLoginStatus } from "@/api/user";
 import chat from "@/components/chat";
 import SideBar from "@/components/SideBar";
 import HeadBar from "@/components/HeadBar";
+import {check} from "@/common/ajax";
 
 export default {
   name: "Container",
@@ -84,27 +84,11 @@ export default {
       }
     };
   },
-  created() {
-    this.$router.push({name: "my-profile"});
-    /*
-    pureget("/login/status").then((res)=>{
-      const RSA_key = res.data["data"].publickey;
-      sessionStorage.setItem("userid", res.data["data"].userid);
-      sessionStorage.setItem("username",res.data["data"].username);
-      sessionStorage.setItem("mobile_number", res.data["data"].mobile_number);
-      sessionStorage.setItem("email", res.data["data"].email);
-      this.$store.commit("setUserid", res.data["data"].userid);
-      pre_post("/login/encryption", RSA_key).then(()=>{
-        if (this.$route.path === "/") {
-          this.$router.push("/my-profile/"+sessionStorage.getItem("userid"));
-        }
-      })
-    },(err)=>{
-      const RSA_key = err.response.data["data"].publickey;
-      pre_post("/login/encryption", RSA_key).then(()=>{
-        this.$router.push({name: "login"});
-      });
-    });*/
+  async created() {
+    await check();
+    if(sessionStorage.getItem("userid")!==null){
+      await this.$router.push("/my-profile/" + sessionStorage.getItem("userid"))
+    }
   }
 };
 </script>

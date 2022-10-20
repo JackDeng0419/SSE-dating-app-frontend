@@ -63,7 +63,7 @@
 
         <el-form-item prop="code">
           <el-input
-            @keyup.enter.native="verification()"
+            @keyup.enter.native="submit_verification()"
             placeholder="code"
             type="password"
             v-model="teleform.code"
@@ -77,7 +77,7 @@
         <el-button size="mini" @click="verification_visible_state = false"
           >cancel</el-button
         >
-        <el-button size="mini" @click="verification()">login</el-button>
+        <el-button size="mini" @click="submit_verification()">login</el-button>
       </span>
     </el-dialog>
 
@@ -136,7 +136,7 @@
 </template>
 
 <script>
-import { login, match, signup } from "@/api/user";
+import { login, verify, signup } from "@/api/user";
 import Config from "@/common/config";
 
 export default {
@@ -170,11 +170,11 @@ export default {
     submit_login() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          match(this.formData).then(
+          login(this.formData).then(
             res => {
               if (Config.verify === true) {
                 this.verification_visible_state = true;
-                this.teleform.mobile_number = res.data["data"].mobile_number;
+                this.teleform.mobile_number = res.data.mobile_number;
               } else {
                 this.$router.push({ name: "container" });
               }
@@ -186,10 +186,10 @@ export default {
         }
       });
     },
-    verification() {
-      login(this.teleform.code).then(
-        res => {
-          this.$message.success("welcome:   " + res.data["data"].username);
+    submit_verification() {
+      verify(this.teleform.code).then(
+        ()=> {
+          this.$message.success("welcome:   " + sessionStorage.getItem("username"));
           this.$router.push({ name: "container" });
         },
         err => {
