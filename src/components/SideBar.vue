@@ -106,6 +106,7 @@ export default {
   methods: {
     dating() {
       this.$parent.dating_visible_state = true;
+      this.$parent.dating_form.toId = this.currentUserId;
     },
     like() {
       if (this.likeStatus == 1) {

@@ -15,46 +15,46 @@
       center
     >
       <el-form :model="dating_form" ref="dating_form" label-width="80px">
-        <el-form-item prop="username">
+        <el-form-item prop="date">
+          <el-date-picker
+            v-model="dating_form.dateTime"
+            type="datetime"
+            value-format="yyyy/MMM/dd/HH"
+            placeholder="Select date and time"
+          >
+          </el-date-picker>
+        </el-form-item>
+
+        <el-form-item prop="city">
           <el-input
             class="input_form"
-            placeholder="username"
-            v-model="dating_form.username"
+            placeholder="city"
+            v-model="dating_form.city"
           >
           </el-input>
         </el-form-item>
 
-        <el-form-item prop="password">
+        <el-form-item prop="location">
           <el-input
             class="input_form"
-            placeholder="password"
-            v-model="dating_form.password"
+            placeholder="location"
+            v-model="dating_form.location"
           >
           </el-input>
         </el-form-item>
 
-        <el-form-item prop="mobile_number">
-          <el-input
-            class="input_form"
-            placeholder="mobile_number"
-            v-model="dating_form.mobile_number"
+        <el-form-item prop="maskRequirement">
+          <el-checkbox v-model="dating_form.maskRequired" class="input_form"
+            >Mask Required</el-checkbox
           >
-          </el-input>
-        </el-form-item>
-
-        <el-form-item prop="email">
-          <el-input
-            class="input_form"
-            placeholder="email"
-            v-model="dating_form.email"
-          >
-          </el-input>
         </el-form-item>
       </el-form>
       <!-- 取消，确定按钮点击事件 -->
       <span slot="footer">
-        <el-button size="mini" @click="dating_visible_state = false">cancel</el-button>
-        <el-button size="mini" @click="signup()">confirm</el-button>
+        <el-button size="mini" @click="dating_visible_state = false"
+          >cancel</el-button
+        >
+        <el-button size="mini" @click="submitDate()">confirm</el-button>
       </span>
     </el-dialog>
   </div>
@@ -64,7 +64,8 @@
 import chat from "@/components/chat";
 import SideBar from "@/components/SideBar";
 import HeadBar from "@/components/HeadBar";
-import {check} from "@/common/ajax";
+import { check } from "@/common/ajax";
+import { sendDate } from "@/api/date";
 
 export default {
   name: "Container",
@@ -77,17 +78,40 @@ export default {
     return {
       dating_visible_state: false,
       dating_form: {
-        username: "",
-        password: "",
-        mobile_number: "",
-        email: ""
+        toId: "",
+        city: "",
+        dateTime: "",
+        location: "",
+        maskRequired: "false"
       }
     };
   },
+  methods: {
+    submitDate() {
+      console.log(this.dating_form);
+      sendDate({ ...this.dating_form }).then(({ data }) => {
+        console.log(data);
+        if (data.code == 200) {
+          this.$message({
+            message: "Date sent",
+            type: "success"
+          });
+        } else {
+          this.$message({
+            message: "Date sending failed",
+            type: "error"
+          });
+        }
+        this.dating_visible_state = false;
+      });
+    }
+  },
   async created() {
     await check();
-    if(sessionStorage.getItem("userid")!==null){
-      await this.$router.push("/my-profile/" + sessionStorage.getItem("userid"))
+    if (sessionStorage.getItem("userid") !== null) {
+      await this.$router.push(
+        "/my-profile/" + sessionStorage.getItem("userid")
+      );
     }
   }
 };
