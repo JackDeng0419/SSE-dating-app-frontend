@@ -19,13 +19,14 @@
           title="Are you sure to cancel this?"
           confirm-button-text="Yes"
           cancel-button-text="No"
+          @onConfirm="confirmCancelDate(scope.row.date_id)"
           :ref="`popover-${scope.$index}`"
         >
           <el-button
             slot="reference"
             type="text"
             size="small"
-            @click="handleClick"
+            :disabled="scope.row.state == 'canceled'"
             >Cancel</el-button
           >
         </el-popconfirm>
@@ -35,10 +36,21 @@
 </template>
 
 <script>
+import { cancelDate } from "@/api/date";
+
 export default {
   methods: {
-    handleClick() {
-      console.log("click");
+    async confirmCancelDate(date_id) {
+      console.log(date_id);
+      const { data } = await cancelDate({ date_id });
+      if (data.code == 200) {
+        this.$parent.getDateList();
+      } else {
+        this.$message({
+          message: "Canceling date failed",
+          type: "error"
+        });
+      }
     },
     tagType(tagName) {
       switch (tagName) {
@@ -48,6 +60,8 @@ export default {
           return "danger";
         case "Accepted":
           return "success";
+        case "canceled":
+          return "info";
         default:
           break;
       }

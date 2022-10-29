@@ -8,6 +8,7 @@
 <script>
 import ContainerTitle from "../components/ContainerTitle.vue";
 import DatesFromMeList from "../components/DatesFromMeList.vue";
+import { getDateFromMe } from "@/api/date.js";
 
 export default {
   components: {
@@ -19,42 +20,44 @@ export default {
       dateList: []
     };
   },
-  mounted: function() {
-    console.log("My likes mounted");
-    this.dateList = [
-      {
-        date: "2016-05-03",
-        name: "Tom",
-        state: "Rejected",
-        city: "Los Angeles",
-        address: "No. 189, Grove St, Los Angeles",
-        tag: "Home"
-      },
-      {
-        date: "2016-05-02",
-        name: "Tom",
-        state: "Pending",
-        city: "Los Angeles",
-        address: "No. 189, Grove St, Los Angeles",
-        tag: "Office"
-      },
-      {
-        date: "2016-05-04",
-        name: "Tom",
-        state: "Accepted",
-        city: "Los Angeles",
-        address: "No. 189, Grove St, Los Angeles",
-        tag: "Home"
-      },
-      {
-        date: "2016-05-01",
-        name: "Tom",
-        state: "Accepted",
-        city: "Los Angeles",
-        address: "No. 189, Grove St, Los Angeles",
-        tag: "Office"
+  methods: {
+    stateToString: function(state) {
+      switch (state) {
+        case 0:
+          return "pending";
+        case 1:
+          return "accepted";
+        case 2:
+          return "rejected";
+        case 3:
+          return "canceled";
+        default:
+          break;
       }
-    ];
+    },
+    getDateList: async function() {
+      console.log("My likes mounted");
+      const { data } = await getDateFromMe();
+      if (data.code == 200) {
+        this.dateList = data.data.map(date => ({
+          date: date.date,
+          name: date.to_username,
+          state: this.stateToString(date.state),
+          city: date.city,
+          address: date.location,
+          date_id: date._uid
+        }));
+        console.log(this.dateList);
+      } else {
+        this.$message({
+          message: "Getting date list failed",
+          type: "error"
+        });
+      }
+    }
+  },
+  mounted: function() {
+    this.getDateList();
   }
 };
 </script>
