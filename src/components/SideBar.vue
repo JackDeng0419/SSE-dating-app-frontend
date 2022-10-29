@@ -5,11 +5,29 @@
       class="nav-image"
     ></el-image>
     <div :class="{ hidden: isHidden }" class="like-date">
-      <el-button id="button1" @click="dating()" type="primary">like</el-button>
-      <el-button id="button1" @click="dating()" type="primary">dislike</el-button>
+      <div class="like">
+        <el-button
+          id="button1"
+          @click="like()"
+          :type="likeBtnType"
+          circle
+          icon="el-icon-star-on"
+          class="like-icon"
+        ></el-button>
+        <el-button
+          id="button1"
+          @click="dislike()"
+          :type="dislikeBtnType"
+          circle
+          icon="el-icon-error"
+          class="like-icon"
+        ></el-button>
+      </div>
       <br />
       <el-button id="button1" @click="dating()" type="primary">date</el-button>
-      <el-button id="button1" @click="message()" type="primary">message</el-button>
+      <el-button id="button1" @click="message()" type="primary"
+        >message</el-button
+      >
     </div>
     <el-menu
       :default-active="this.$router.path"
@@ -68,12 +86,18 @@
 </template>
 
 <script>
+import { likeUser, dislikeUser, normalUser, getLikeStatus } from "@/api/like";
+
 export default {
   name: "SideBar",
   data: function() {
     return {
       isHidden: true,
-      profileIndex: "/my-profile/" + sessionStorage.getItem("userid")
+      profileIndex: "/my-profile/" + sessionStorage.getItem("userid"),
+      likeStatus: 0,
+      currentUserId: null,
+      likeBtnType: "default",
+      dislikeBtnType: "default"
     };
   },
   created() {
@@ -83,7 +107,62 @@ export default {
     dating() {
       this.$parent.dating_visible_state = true;
     },
-    message(){
+    like() {
+      if (this.likeStatus == 1) {
+        this.normal(1);
+      } else {
+        likeUser(this.currentUserId).then(res => {
+          if (res) {
+            console.log(res);
+            if (res.data.code == 200) {
+              this.$message({
+                message: "Liked",
+                type: "success"
+              });
+              this.likeStatus = res.data.data.likeStatus;
+            }
+          }
+        });
+      }
+    },
+    dislike() {
+      if (this.likeStatus == 2) {
+        this.normal(2);
+      } else {
+        dislikeUser(this.currentUserId).then(res => {
+          if (res) {
+            if (res.data.code == 200) {
+              this.$message({
+                message: "Disliked",
+                type: "success"
+              });
+              this.likeStatus = res.data.data.likeStatus;
+            }
+          }
+        });
+      }
+    },
+    normal(oldStatus) {
+      normalUser(this.currentUserId).then(res => {
+        if (res) {
+          if (res.data.code == 200) {
+            if (oldStatus == 1) {
+              this.$message({
+                message: "Like canceled",
+                type: "success"
+              });
+            } else if (oldStatus == 2) {
+              this.$message({
+                message: "Dislike canceled",
+                type: "success"
+              });
+            }
+            this.likeStatus = res.data.data.likeStatus;
+          }
+        }
+      });
+    },
+    message() {
       console.log(this.$parent.$children[2]);
       this.$parent.$children[2].chat_visible = true;
     }
@@ -94,7 +173,7 @@ export default {
       if (string.length === 3) {
         if (string[1] === "my-profile") {
           const id = string[2];
-
+          this.currentUserId = id;
           // if is current user id, set isHidden to true
           this.isHidden = id === sessionStorage.getItem("userid");
         }
@@ -102,6 +181,33 @@ export default {
         // if is in other nav, set isHidden to true
         console.log(string.length);
         this.isHidden = true;
+      }
+    },
+    isHidden(isHidden) {
+      console.log(isHidden);
+      if (!isHidden) {
+        getLikeStatus(this.currentUserId).then(({ data }) => {
+          console.log(data);
+          if (data != null) {
+            if (data.code == 200) {
+              this.likeStatus = data.data.likeStatus;
+            } else {
+              this.$message.error(data.message);
+            }
+          }
+        });
+      }
+    },
+    likeStatus(likeStatus) {
+      if (likeStatus == 1) {
+        this.likeBtnType = "danger";
+        this.dislikeBtnType = "default";
+      } else if (likeStatus == 0) {
+        this.likeBtnType = "default";
+        this.dislikeBtnType = "default";
+      } else if (likeStatus == 2) {
+        this.likeBtnType = "default";
+        this.dislikeBtnType = "info";
       }
     }
   }
@@ -135,11 +241,24 @@ export default {
 
 .nav-image {
   margin: 30px;
+  margin-bottom: 10px;
   border-radius: 5px;
 }
 
 .like-date {
   margin-left: 30px;
+  /* display: flex; */
+}
+
+.like {
+  display: flex;
+  justify-content: center;
+  margin-left: -40px;
+}
+
+.like-icon {
+  font-size: 30px;
+  margin: 0 10px;
 }
 
 .date-btn {
