@@ -1,10 +1,36 @@
+<!-- eslint-disable vue/valid-v-for -->
 <template>
-  <div class="MyProfile">
-    <div class="profile_form">
-      <div class="form-title">&nbsp;&nbsp;Basic Information</div>
+  <div class="my-profile">
+    <div class="sub-profile">
+      <div class="title-btn">
+        <div class="form-title">Basic Information</div>
+        <div class="edit-btn">
+          <el-button
+            v-if="!basicInformationEditing"
+            @click="edit_profile()"
+            :class="{ active: isActive }"
+            type="primary"
+            >Edit</el-button
+          >
+          <el-button
+            v-if="basicInformationEditing"
+            @click="edit_profile_cancel()"
+            :class="{ active: isActive }"
+            type="default"
+            >Cancel</el-button
+          >
+          <el-button
+            v-if="basicInformationEditing"
+            @click="edit_profile_confirm()"
+            :class="{ active: isActive }"
+            type="primary"
+            >Confirm</el-button
+          >
+        </div>
+      </div>
       <el-form
         :model="basic_information"
-        class="profile_form_content"
+        class="form"
         label-width="0px"
         ref="form"
       >
@@ -27,23 +53,23 @@
               v-model="basic_information.gender"
               placeholder="male"
             >
-              <el-option
-                v-for="item in profile_gender"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              ></el-option>
+              <el-option key="female" label="female" value="0"
+                >female</el-option
+              >
+              <el-option key="male" label="male" value="1">male</el-option>
             </el-select>
           </el-form-item>
           <el-form-item class="input_form" prop="age">
             <div class="input_title">age</div>
-            <el-input
-              :readonly="profile_readonly"
-              class="input_item"
-              placeholder="null"
+
+            <el-input-number
+              :disabled="profile_readonly"
               v-model="basic_information.age"
-            >
-            </el-input>
+              controls-position="right"
+              :min="18"
+              :max="150"
+              class="input_item"
+            ></el-input-number>
           </el-form-item>
           <el-form-item class="input_form" prop="preferred language">
             <div class="input_title">preferred language</div>
@@ -52,16 +78,6 @@
               class="input_item"
               placeholder="null"
               v-model="basic_information.preferred_language"
-            >
-            </el-input>
-          </el-form-item>
-          <el-form-item class="input_form" prop="education">
-            <div class="input_title">education</div>
-            <el-input
-              :readonly="profile_readonly"
-              class="input_item"
-              placeholder="null"
-              v-model="basic_information.education"
             >
             </el-input>
           </el-form-item>
@@ -98,34 +114,6 @@
             >
             </el-date-picker>
           </el-form-item>
-          <el-form-item class="input_form" prop="relationship status">
-            <div class="input_title">relationship status</div>
-            <el-input
-              :readonly="profile_readonly"
-              class="input_item"
-              placeholder="null"
-              v-model="basic_information.relationship_status"
-            >
-            </el-input>
-          </el-form-item>
-          <el-form-item class="input_form" prop="profession">
-            <div class="input_title">profession</div>
-            <el-input
-              :readonly="profile_readonly"
-              class="input_item"
-              placeholder="null"
-              v-model="basic_information.profession"
-            >
-            </el-input>
-          </el-form-item>
-        </div>
-        <div class="edit-btn">
-          <el-button
-            @click="edit_profile()"
-            :class="{ active: isActive }"
-            type="primary"
-            >confirm</el-button
-          >
         </div>
       </el-form>
       <div id="mapBox" :style="{ height: Height }"></div>
@@ -142,14 +130,35 @@
       </div>
     </div>
 
-    <div class="looks_form">
-      <div class="form-title">&nbsp;&nbsp;Looks</div>
-      <el-form
-        :model="looks"
-        class="looks_form_content"
-        label-width="0px"
-        ref="form"
-      >
+    <div class="sub-profile">
+      <div class="title-btn">
+        <div class="form-title">&nbsp;&nbsp;Looks</div>
+        <div class="edit-btn">
+          <el-button
+            v-if="!looksEditing"
+            @click="edit_looks()"
+            :class="{ active: isActive }"
+            type="primary"
+            >Edit</el-button
+          >
+          <el-button
+            v-if="looksEditing"
+            @click="edit_looks_cancel()"
+            :class="{ active: isActive }"
+            type="default"
+            >Cancel</el-button
+          >
+          <el-button
+            v-if="looksEditing"
+            @click="edit_looks_confirm()"
+            :class="{ active: isActive }"
+            type="primary"
+            >Confirm</el-button
+          >
+        </div>
+      </div>
+
+      <el-form :model="looks" class="form" label-width="0px" ref="form">
         <div class="form_left">
           <el-form-item class="input_form" prop="ethnicity">
             <div class="input_title">Ethnicity</div>
@@ -214,6 +223,52 @@
             </el-input>
           </el-form-item>
         </div>
+      </el-form>
+    </div>
+
+    <div class="sub-profile">
+      <div class="title-btn">
+        <div class="form-title">&nbsp;&nbsp;Hobby</div>
+        <div class="edit-btn">
+          <el-button
+            v-if="!hobbiesEditing"
+            @click="edit_hobbies()"
+            :class="{ active: isActive }"
+            type="primary"
+            >Edit</el-button
+          >
+          <el-button
+            v-if="hobbiesEditing"
+            @click="edit_hobbies_cancel()"
+            :class="{ active: isActive }"
+            type="default"
+            >Cancel</el-button
+          >
+          <el-button
+            v-if="hobbiesEditing"
+            @click="edit_hobbies_confirm()"
+            :class="{ active: isActive }"
+            type="primary"
+            >Confirm</el-button
+          >
+        </div>
+      </div>
+      <el-form :model="hobbies" class="check-form" label-width="0px" ref="form">
+        <el-form-item
+          class="input_form"
+          v-for="(hobby, key) in hobbies"
+          :v-bind="key"
+        >
+          <el-checkbox :disabled="!hobbiesEditing" v-model="hobbies[key]">{{
+            key
+          }}</el-checkbox>
+        </el-form-item>
+      </el-form>
+    </div>
+
+    <div class="sub-profile">
+      <div class="title-btn">
+        <div class="form-title">&nbsp;&nbsp;Covid information</div>
         <div class="edit-btn">
           <el-button
             @click="edit_looks()"
@@ -222,17 +277,8 @@
             >confirm</el-button
           >
         </div>
-      </el-form>
-    </div>
-
-    <div class="covid_form">
-      <div class="form-title">&nbsp;&nbsp;Covid information</div>
-      <el-form
-        :model="covid"
-        class="covid_form_content"
-        label-width="0px"
-        ref="form"
-      >
+      </div>
+      <el-form :model="covid" class="form" label-width="0px" ref="form">
         <div class="form_left">
           <el-form-item class="input_form" prop="vaccination">
             <div class="input_title">vaccination</div>
@@ -257,14 +303,6 @@
             </el-input>
           </el-form-item>
         </div>
-        <div class="edit-btn">
-          <el-button
-            @click="edit_looks()"
-            :class="{ active: isActive }"
-            type="primary"
-            >confirm</el-button
-          >
-        </div>
       </el-form>
     </div>
   </div>
@@ -273,8 +311,10 @@
 import {
   get_basic_information,
   update_basic_information,
-  profile_gender,
-  get_looks
+  update_looks,
+  update_hobbies,
+  get_looks,
+  get_hobbies
 } from "@/api/profile";
 import { initMap } from "@/api/map"; //引入
 import VueGoogleAutocomplete from "vue-google-autocomplete";
@@ -289,21 +329,21 @@ export default {
       profile_disabled: true,
       looks_readonly: true,
       looks_disabled: true,
+      hobbies_readonly: true,
+      hobbies_disabled: true,
       basic_information: {
         first_name: "",
         last_name: "",
-        age: "",
-        gender: "",
+        age: 18,
+        gender: 0,
         preferred_language: "",
         nationality: "",
         birthday: "",
-        relationship_status: "",
-        profession: "",
-        education: "",
         location: "",
         latitude: 0,
         longitude: 0
       },
+      basic_information_backup: {},
       looks: {
         ethnicity: "",
         body_type: "",
@@ -312,12 +352,23 @@ export default {
         hair_color: "",
         eye_color: ""
       },
+      looks_backup: {},
+      hobbies: {
+        sport: false,
+        movie: false,
+        reading: false,
+        dancing: false,
+        music: false
+      },
+      hobby_backup: {},
       covid: {
         vaccination: "",
         other: ""
       },
-      profile_gender: profile_gender,
-      Height: "400px"
+      Height: "400px",
+      basicInformationEditing: false,
+      looksEditing: false,
+      hobbiesEditing: false
     };
   },
 
@@ -339,12 +390,12 @@ export default {
         );
         sessionStorage.setItem("nationality", res.data["data"].nationality);
         sessionStorage.setItem("birthday", res.data["data"].birthday);
-        sessionStorage.setItem(
-          "relationship_status",
-          res.data["data"].relationship_status
-        );
-        sessionStorage.setItem("profession", res.data["data"].profession);
-        sessionStorage.setItem("education", res.data["data"].education);
+        // sessionStorage.setItem(
+        //   "relationship_status",
+        //   res.data["data"].relationship_status
+        // );
+        // sessionStorage.setItem("profession", res.data["data"].profession);
+        // sessionStorage.setItem("education", res.data["data"].education);
         this.basic_information.first_name = sessionStorage.getItem(
           "first_name"
         );
@@ -358,13 +409,13 @@ export default {
           "nationality"
         );
         this.basic_information.birthday = sessionStorage.getItem("birthday");
-        this.basic_information.relationship_status = sessionStorage.getItem(
-          "relationship_status"
-        );
-        this.basic_information.profession = sessionStorage.getItem(
-          "profession"
-        );
-        this.basic_information.education = sessionStorage.getItem("education");
+        // this.basic_information.relationship_status = sessionStorage.getItem(
+        //   "relationship_status"
+        // );
+        // this.basic_information.profession = sessionStorage.getItem(
+        //   "profession"
+        // );
+        // this.basic_information.education = sessionStorage.getItem("education");
         initMap(
           this.basic_information.latitude,
           this.basic_information.longitude
@@ -403,32 +454,131 @@ export default {
       this.basic_information.location = val.newVal;
     },
     edit_profile() {
-      if (this.profile_readonly === true) {
-        this.profile_readonly = false;
-        this.profile_disabled = false;
-        this.Height = "0px";
-        this.mapisActive = false;
+      this.basicInformationEditing = true;
+      this.basic_information_backup = { ...this.basic_information };
+      this.profile_readonly = false;
+      this.profile_disabled = false;
+      this.Height = "0px";
+      this.mapisActive = false;
+      // if (this.profile_readonly === true) {
+      // } else {
+      //   // update_basic_information(this.basic_information);
+      //   // initMap(
+      //   //   this.basic_information.latitude,
+      //   //   this.basic_information.longitude
+      //   // );
+      //   // this.profile_readonly = true;
+      //   // this.profile_disabled = true;
+      //   // this.Height = "400px";
+      //   // this.mapisActive = true;
+      // }
+    },
+    edit_profile_cancel() {
+      this.basicInformationEditing = false;
+      this.basic_information = { ...this.basic_information_backup };
+      this.profile_readonly = true;
+      this.profile_disabled = true;
+      this.Height = "400px";
+      this.mapisActive = true;
+    },
+    async edit_profile_confirm() {
+      this.basicInformationEditing = false;
+      const { data } = await update_basic_information(this.basic_information);
+      if (data.code == 200) {
+        this.$message({
+          message: "update profile succeeded",
+          type: "success"
+        });
       } else {
-        update_basic_information(this.basic_information);
-        initMap(
-          this.basic_information.latitude,
-          this.basic_information.longitude
-        );
-        this.profile_readonly = true;
-        this.profile_disabled = true;
-        this.Height = "400px";
-        this.mapisActive = true;
+        this.$message({
+          message: "update profile failed",
+          type: "error"
+        });
       }
+      initMap(
+        this.basic_information.latitude,
+        this.basic_information.longitude
+      );
+      this.profile_readonly = true;
+      this.profile_disabled = true;
+      this.Height = "400px";
+      this.mapisActive = true;
     },
     edit_looks() {
-      if (this.looks_readonly === true) {
-        this.looks_readonly = false;
-        this.looks_disabled = false;
+      this.looksEditing = true;
+      this.looks_backup = { ...this.looks };
+      this.looks_readonly = false;
+      this.looks_disabled = false;
+      // if (this.looks_readonly === true) {
+      //   this.looks_readonly = false;
+      //   this.looks_disabled = false;
+      // } else {
+      //   //update_basic_information(this.basic_information);
+      //   this.looks_readonly = true;
+      //   this.looks_disabled = true;
+      // }
+    },
+    edit_looks_cancel() {
+      this.looksEditing = false;
+      this.looks = { ...this.looks_backup };
+      this.looks_readonly = true;
+      this.looks_disabled = true;
+    },
+    async edit_looks_confirm() {
+      this.looksEditing = false;
+      const { data } = await update_looks(this.looks);
+      if (data.code == 200) {
+        this.$message({
+          message: "update looks succeeded",
+          type: "success"
+        });
       } else {
-        //update_basic_information(this.basic_information);
-        this.looks_readonly = true;
-        this.looks_disabled = true;
+        this.$message({
+          message: "update looks failed",
+          type: "error"
+        });
       }
+
+      this.looks_readonly = true;
+      this.looks_disabled = true;
+    },
+    edit_hobbies() {
+      this.hobbiesEditing = true;
+      this.hobbies_backup = { ...this.hobbies };
+      this.hobbies_readonly = false;
+      this.hobbies_disabled = false;
+      // if (this.hobbies_readonly === true) {
+      //   this.hobbies_readonly = false;
+      //   this.hobbies_disabled = false;
+      // } else {
+      //   //update_basic_information(this.basic_information);
+      //   this.hobbies_readonly = true;
+      //   this.hobbies_disabled = true;
+      // }
+    },
+    edit_hobbies_cancel() {
+      this.hobbiesEditing = false;
+      this.hobbies = { ...this.hobbies_backup };
+      this.hobbies_readonly = true;
+      this.hobbies_disabled = true;
+    },
+    async edit_hobbies_confirm() {
+      this.hobbiesEditing = false;
+      const { data } = await update_hobbies(this.hobbies);
+      if (data.code == 200) {
+        this.$message({
+          message: "update hobbies succeeded",
+          type: "success"
+        });
+      } else {
+        this.$message({
+          message: "update hobbies failed",
+          type: "error"
+        });
+      }
+
+      this.hobbies_readonly = true;
+      this.hobbies_disabled = true;
     }
   },
   watch: {
@@ -437,6 +587,7 @@ export default {
         this.$router.push("/my-profile/" + sessionStorage.getItem("userid"));
         return;
       }
+      console.log(to.path.toString());
       const tmp_id = to.path.split("/")[2];
       this.isActive = tmp_id !== sessionStorage.getItem("userid");
       get_basic_information(tmp_id).then(
@@ -509,16 +660,62 @@ export default {
         this.looks_readonly = true;
         this.looks_disabled = true;
       });
+      get_hobbies();
     }
+  },
+  mounted() {
+    console.log(this.$router.currentRoute.value.path);
   }
 };
 </script>
 
 <style scoped>
-.active {
+.my-profile {
+  background: rgb(0, 0, 0);
+  border-radius: 10px;
+  margin-left: -60px;
+  margin-right: 30px;
+  padding: 20px;
+  margin-top: 30px;
+}
+
+.sub-profile {
+  margin-bottom: 30px;
+}
+
+.title-btn {
+  display: flex;
+  justify-content: space-between;
+  align-content: center;
+  border-bottom: 1px white solid;
+  padding-bottom: 10px;
+}
+
+.form-title {
+  font-size: 30px;
+}
+
+.form {
+  display: flex;
+}
+
+.form > * {
+  margin-right: 100px;
+  flex-basis: 800px;
+}
+
+.check-form {
+  display: flex;
+}
+
+.check-form > * {
+  margin-right: 30px;
+}
+
+/* .active {
   display: none;
 }
-.profile_form {
+/* .profile_form {
   position: relative;
   width: 100%;
   background-color: black;
@@ -538,18 +735,19 @@ export default {
   background-color: black;
   border-radius: 15px 15px 15px 15px;
   height: 300px;
-}
+} */
 
-.form-title {
+/* .form-title {
   position: absolute;
   top: 0;
   left: 0;
   height: 60px;
-  width: 100%;
+  width: 95%;
   line-height: 60px;
   font-size: 30px;
   color: #ffffff;
   border-bottom: 1px solid gray;
+  padding-left: 30px;
 }
 .form_left {
   position: absolute;
@@ -600,5 +798,5 @@ export default {
   border-bottom-width: 1px;
   width: 300px;
   color: white;
-}
+}  */
 </style>
