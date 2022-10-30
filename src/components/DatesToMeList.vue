@@ -19,6 +19,7 @@
           title="Are you sure to accept this date?"
           confirm-button-text="Yes"
           cancel-button-text="No"
+          @onConfirm="confirmAcceptDate(scope.row.date_id)"
           :ref="`popover-${scope.$index}`"
         >
           <el-button
@@ -34,6 +35,7 @@
           title="Are you sure to reject this date?"
           confirm-button-text="Yes"
           cancel-button-text="No"
+          @onConfirm="confirmRejectDate(scope.row.date_id)"
           :ref="`popover-${scope.$index}`"
         >
           <el-button
@@ -52,6 +54,8 @@
 </template>
 
 <script>
+import { rejectDate, acceptDate } from "@/api/date";
+
 export default {
   methods: {
     handleClick() {
@@ -59,14 +63,47 @@ export default {
     },
     tagType(tagName) {
       switch (tagName) {
-        case "Pending":
+        case "pending":
           return "primary";
-        case "Rejected":
+        case "rejected":
           return "danger";
-        case "Accepted":
+        case "accepted":
           return "success";
+        case "canceled":
+          return "info";
         default:
           break;
+      }
+    },
+    async confirmAcceptDate(date_id) {
+      const { data } = await acceptDate({ date_id });
+      console.log(data);
+      if (data.code == 200) {
+        this.$parent.getDateList();
+        this.$message({
+          message: "accept date succeeded",
+          type: "success"
+        });
+      } else {
+        this.$message({
+          message: "accept date failed",
+          type: "error"
+        });
+      }
+    },
+    async confirmRejectDate(date_id) {
+      const { data } = await rejectDate({ date_id });
+      if (data.code == 200) {
+        this.$parent.getDateList();
+        this.$message({
+          message: "reject date succeeded",
+          type: "success"
+        });
+      } else {
+        this.$message({
+          message: "reject date failed",
+          type: "error"
+        });
       }
     }
   },
@@ -74,42 +111,7 @@ export default {
     dateList: []
   },
   data() {
-    return {
-      tableData: [
-        {
-          date: "2016-05-03",
-          name: "Tom",
-          state: "Rejected",
-          city: "Los Angeles",
-          address: "No. 189, Grove St, Los Angeles",
-          tag: "Home"
-        },
-        {
-          date: "2016-05-02",
-          name: "Tom",
-          state: "Pending",
-          city: "Los Angeles",
-          address: "No. 189, Grove St, Los Angeles",
-          tag: "Office"
-        },
-        {
-          date: "2016-05-04",
-          name: "Tom",
-          state: "Accepted",
-          city: "Los Angeles",
-          address: "No. 189, Grove St, Los Angeles",
-          tag: "Home"
-        },
-        {
-          date: "2016-05-01",
-          name: "Tom",
-          state: "Accepted",
-          city: "Los Angeles",
-          address: "No. 189, Grove St, Los Angeles",
-          tag: "Office"
-        }
-      ]
-    };
+    return {};
   }
 };
 </script>

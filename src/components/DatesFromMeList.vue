@@ -45,6 +45,10 @@ export default {
       const { data } = await cancelDate({ date_id });
       if (data.code == 200) {
         this.$parent.getDateList();
+        this.$message({
+          message: "Canceling date succeeded",
+          type: "error"
+        });
       } else {
         this.$message({
           message: "Canceling date failed",
@@ -54,11 +58,11 @@ export default {
     },
     tagType(tagName) {
       switch (tagName) {
-        case "Pending":
+        case "pending":
           return "primary";
-        case "Rejected":
+        case "rejected":
           return "danger";
-        case "Accepted":
+        case "accepted":
           return "success";
         case "canceled":
           return "info";
