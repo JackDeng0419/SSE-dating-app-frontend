@@ -8,21 +8,21 @@
           <el-button
             v-if="!basicInformationEditing"
             @click="edit_profile()"
-            :class="{ active: isActive }"
+            :class="{ active: isLoginUser }"
             type="primary"
             >Edit</el-button
           >
           <el-button
             v-if="basicInformationEditing"
             @click="edit_profile_cancel()"
-            :class="{ active: isActive }"
+            :class="{ active: isLoginUser }"
             type="default"
             >Cancel</el-button
           >
           <el-button
             v-if="basicInformationEditing"
             @click="edit_profile_confirm()"
-            :class="{ active: isActive }"
+            :class="{ active: isLoginUser }"
             type="primary"
             >Confirm</el-button
           >
@@ -137,21 +137,21 @@
           <el-button
             v-if="!looksEditing"
             @click="edit_looks()"
-            :class="{ active: isActive }"
+            :class="{ active: isLoginUser }"
             type="primary"
             >Edit</el-button
           >
           <el-button
             v-if="looksEditing"
             @click="edit_looks_cancel()"
-            :class="{ active: isActive }"
+            :class="{ active: isLoginUser }"
             type="default"
             >Cancel</el-button
           >
           <el-button
             v-if="looksEditing"
             @click="edit_looks_confirm()"
-            :class="{ active: isActive }"
+            :class="{ active: isLoginUser }"
             type="primary"
             >Confirm</el-button
           >
@@ -233,21 +233,21 @@
           <el-button
             v-if="!hobbiesEditing"
             @click="edit_hobbies()"
-            :class="{ active: isActive }"
+            :class="{ active: isLoginUser }"
             type="primary"
             >Edit</el-button
           >
           <el-button
             v-if="hobbiesEditing"
             @click="edit_hobbies_cancel()"
-            :class="{ active: isActive }"
+            :class="{ active: isLoginUser }"
             type="default"
             >Cancel</el-button
           >
           <el-button
             v-if="hobbiesEditing"
             @click="edit_hobbies_confirm()"
-            :class="{ active: isActive }"
+            :class="{ active: isLoginUser }"
             type="primary"
             >Confirm</el-button
           >
@@ -272,7 +272,7 @@
         <div class="edit-btn">
           <el-button
             @click="edit_looks()"
-            :class="{ active: isActive }"
+            :class="{ active: isLoginUser }"
             type="primary"
             >confirm</el-button
           >
@@ -318,12 +318,13 @@ import {
 } from "@/api/profile";
 import { initMap } from "@/api/map"; //引入
 import VueGoogleAutocomplete from "vue-google-autocomplete";
+
 export default {
   name: "MyProfile",
   components: { VueGoogleAutocomplete },
   data: function() {
     return {
-      isActive: false,
+      isLoginUser: false,
       mapisActive: true,
       profile_readonly: true,
       profile_disabled: true,
@@ -377,7 +378,7 @@ export default {
       this.$router.push("/my-profile/" + sessionStorage.getItem("userid"));
     }
     const tmp_id = this.$route.path.split("/")[2];
-    this.isActive = tmp_id !== sessionStorage.getItem("userid");
+    this.isLoginUser = tmp_id !== sessionStorage.getItem("userid");
     get_basic_information(tmp_id).then(
       res => {
         sessionStorage.setItem("first_name", res.data["data"].first_name);
@@ -579,97 +580,112 @@ export default {
 
       this.hobbies_readonly = true;
       this.hobbies_disabled = true;
+    },
+    routeChange() {
+      console.log(this.$route.path);
+      const path = this.$route.path;
+      if (path.toString() === "/my-profile") {
+        this.$router.push("/my-profile/" + sessionStorage.getItem("userid"));
+        return;
+      } else {
+        const tmp_id = this.$route.path.split("/")[2];
+        this.isLoginUser = tmp_id !== sessionStorage.getItem("userid");
+        console.log("tmp_id", tmp_id);
+        get_basic_information(tmp_id).then(
+          res => {
+            sessionStorage.setItem("first_name", res.data["data"].first_name);
+            sessionStorage.setItem("last_name", res.data["data"].last_name);
+            sessionStorage.setItem("age", res.data["data"].age);
+            sessionStorage.setItem("gender", res.data["data"].gender);
+            sessionStorage.setItem(
+              "preferred_language",
+              res.data["data"].preferred_language
+            );
+            sessionStorage.setItem("nationality", res.data["data"].nationality);
+            sessionStorage.setItem("birthday", res.data["data"].birthday);
+            sessionStorage.setItem(
+              "relationship_status",
+              res.data["data"].relationship_status
+            );
+            sessionStorage.setItem("profession", res.data["data"].profession);
+            sessionStorage.setItem("education", res.data["data"].education);
+            this.basic_information.first_name = sessionStorage.getItem(
+              "first_name"
+            );
+            this.basic_information.last_name = sessionStorage.getItem(
+              "last_name"
+            );
+            this.basic_information.age = sessionStorage.getItem("age");
+            this.basic_information.gender = sessionStorage.getItem("gender");
+            this.basic_information.preferred_language = sessionStorage.getItem(
+              "preferred_language"
+            );
+            this.basic_information.nationality = sessionStorage.getItem(
+              "nationality"
+            );
+            this.basic_information.birthday = sessionStorage.getItem(
+              "birthday"
+            );
+            this.basic_information.relationship_status = sessionStorage.getItem(
+              "relationship_status"
+            );
+            this.basic_information.profession = sessionStorage.getItem(
+              "profession"
+            );
+            this.basic_information.education = sessionStorage.getItem(
+              "education"
+            );
+            this.basic_information.location = "Adelaide SA, Australia";
+            this.profile_readonly = true;
+            this.profile_disabled = true;
+            initMap(
+              this.basic_information.latitude,
+              this.basic_information.longitude
+            );
+          },
+          err => {
+            this.$message.error(err.response.msg);
+          }
+        );
+        get_looks(tmp_id).then(res => {
+          sessionStorage.setItem("ethnicity", res.data["data"].ethnicity);
+          sessionStorage.setItem("body_type", res.data["data"].body_type);
+          sessionStorage.setItem("height", res.data["data"].height);
+          sessionStorage.setItem("weight", res.data["data"].weight);
+          sessionStorage.setItem("hair_color", res.data["data"].hair_color);
+          sessionStorage.setItem("eye_color", res.data["data"].eye_color);
+          this.looks.ethnicity = sessionStorage.getItem("ethnicity");
+          this.looks.body_type = sessionStorage.getItem("body_type");
+          this.looks.height = sessionStorage.getItem("height");
+          this.looks.weight = sessionStorage.getItem("weight");
+          this.looks.hair_color = sessionStorage.getItem("hair_color");
+          this.looks.eye_color = sessionStorage.getItem("eye_color");
+          this.looks_readonly = true;
+          this.looks_disabled = true;
+        });
+        get_hobbies(tmp_id).then(res => {
+          this.hobbies = res.data.data;
+        });
+      }
     }
   },
   watch: {
     $route(to) {
-      if (to.path.toString() === "/my-profile") {
-        this.$router.push("/my-profile/" + sessionStorage.getItem("userid"));
-        return;
-      }
-      console.log(to.path.toString());
-      const tmp_id = to.path.split("/")[2];
-      this.isActive = tmp_id !== sessionStorage.getItem("userid");
-      get_basic_information(tmp_id).then(
-        res => {
-          sessionStorage.setItem("first_name", res.data["data"].first_name);
-          sessionStorage.setItem("last_name", res.data["data"].last_name);
-          sessionStorage.setItem("age", res.data["data"].age);
-          sessionStorage.setItem("gender", res.data["data"].gender);
-          sessionStorage.setItem(
-            "preferred_language",
-            res.data["data"].preferred_language
-          );
-          sessionStorage.setItem("nationality", res.data["data"].nationality);
-          sessionStorage.setItem("birthday", res.data["data"].birthday);
-          sessionStorage.setItem(
-            "relationship_status",
-            res.data["data"].relationship_status
-          );
-          sessionStorage.setItem("profession", res.data["data"].profession);
-          sessionStorage.setItem("education", res.data["data"].education);
-          this.basic_information.first_name = sessionStorage.getItem(
-            "first_name"
-          );
-          this.basic_information.last_name = sessionStorage.getItem(
-            "last_name"
-          );
-          this.basic_information.age = sessionStorage.getItem("age");
-          this.basic_information.gender = sessionStorage.getItem("gender");
-          this.basic_information.preferred_language = sessionStorage.getItem(
-            "preferred_language"
-          );
-          this.basic_information.nationality = sessionStorage.getItem(
-            "nationality"
-          );
-          this.basic_information.birthday = sessionStorage.getItem("birthday");
-          this.basic_information.relationship_status = sessionStorage.getItem(
-            "relationship_status"
-          );
-          this.basic_information.profession = sessionStorage.getItem(
-            "profession"
-          );
-          this.basic_information.education = sessionStorage.getItem(
-            "education"
-          );
-          this.basic_information.location = "Adelaide SA, Australia";
-          this.profile_readonly = true;
-          this.profile_disabled = true;
-          initMap(
-            this.basic_information.latitude,
-            this.basic_information.longitude
-          );
-        },
-        err => {
-          this.$message.error(err.response.msg);
-        }
-      );
-      get_looks(tmp_id).then(res => {
-        sessionStorage.setItem("ethnicity", res.data["data"].ethnicity);
-        sessionStorage.setItem("body_type", res.data["data"].body_type);
-        sessionStorage.setItem("height", res.data["data"].height);
-        sessionStorage.setItem("weight", res.data["data"].weight);
-        sessionStorage.setItem("hair_color", res.data["data"].hair_color);
-        sessionStorage.setItem("eye_color", res.data["data"].eye_color);
-        this.looks.ethnicity = sessionStorage.getItem("ethnicity");
-        this.looks.body_type = sessionStorage.getItem("body_type");
-        this.looks.height = sessionStorage.getItem("height");
-        this.looks.weight = sessionStorage.getItem("weight");
-        this.looks.hair_color = sessionStorage.getItem("hair_color");
-        this.looks.eye_color = sessionStorage.getItem("eye_color");
-        this.looks_readonly = true;
-        this.looks_disabled = true;
-      });
-      get_hobbies();
+      console.log("change route");
+      this.routeChange();
     }
   },
   mounted() {
-    console.log(this.$router.currentRoute.value.path);
+    this.routeChange();
   }
 };
 </script>
 
 <style scoped>
+.active {
+  display: none;
+}
+
 .my-profile {
   background: rgb(0, 0, 0);
   border-radius: 10px;
