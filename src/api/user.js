@@ -5,6 +5,6 @@ export const verify = code => post("/login/verify", { code: code });
 
 export const signup = formdata => post("/login/signup", formdata);
 
-export const getLoginStatus = () => {
-  return pureget("/login/status");
+export const apply_code = () => {
+  return pureget("/login/code");
 };

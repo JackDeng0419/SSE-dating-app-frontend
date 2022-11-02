@@ -64,7 +64,7 @@
 import chat from "@/components/chat";
 import SideBar from "@/components/SideBar";
 import HeadBar from "@/components/HeadBar";
-import {check} from "@/common/ajax";
+//import {check_status, check_key} from "@/common/ajax";
 
 export default {
   name: "Container",
@@ -83,12 +83,6 @@ export default {
         email: ""
       }
     };
-  },
-  async created() {
-    await check();
-    if(sessionStorage.getItem("userid")!==null){
-      await this.$router.push("/my-profile/" + sessionStorage.getItem("userid"))
-    }
   }
 };
 </script>

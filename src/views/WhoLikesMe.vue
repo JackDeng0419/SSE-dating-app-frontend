@@ -23,7 +23,7 @@ export default {
     this.whoLikedMeUserList = [
       {
         avatar:
-          "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
+          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
         username: "zhengjie-deng",
         userId: "123456",
         firstName: "Zhengjie",
@@ -34,7 +34,7 @@ export default {
       },
       {
         avatar:
-          "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
+          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
         username: "zhengjie-deng",
         userId: "123456",
         firstName: "Zhengjie",
@@ -45,7 +45,7 @@ export default {
       },
       {
         avatar:
-          "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
+          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
         username: "zhengjie-deng",
         userId: "123456",
         firstName: "Zhengjie",
@@ -56,7 +56,7 @@ export default {
       },
       {
         avatar:
-          "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
+          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
         username: "zhengjie-deng",
         userId: "123456",
         firstName: "Zhengjie",
@@ -67,7 +67,7 @@ export default {
       },
       {
         avatar:
-          "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
+          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
         username: "zhengjie-deng",
         userId: "123456",
         firstName: "Zhengjie",
@@ -78,7 +78,7 @@ export default {
       },
       {
         avatar:
-          "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
+          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
         username: "zhengjie-deng",
         userId: "123456",
         firstName: "Zhengjie",
