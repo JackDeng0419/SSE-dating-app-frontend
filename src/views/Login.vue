@@ -4,29 +4,27 @@
       <div class="form-title">dating app</div>
       <div class="form-subtitle">Login to your account</div>
       <el-form
-        :model="formData"
+        :model="login_form"
         :rules="rules"
         class="login-form-content"
         label-width="0px"
         ref="form"
       >
-        <div class="input_form">
-          <el-form-item prop="username">
-            <el-input
+        <el-form-item prop="username" label="username">
+          <el-input
               class="input_form"
               placeholder="username"
-              v-model="formData.username"
-            >
-            </el-input>
-          </el-form-item>
-        </div>
+              v-model="login_form.username"
+          >
+          </el-input>
+        </el-form-item>
 
-        <el-form-item prop="password">
+        <el-form-item prop="password" label="password">
           <el-input
             @keyup.enter.native="submit()"
             placeholder="password"
             type="password"
-            v-model="formData.password"
+            v-model="login_form.password"
             class="input_form"
           >
           </el-input>
@@ -47,30 +45,28 @@
       width="400px"
       center
     >
-      <el-form :model="teleform" ref="loginForm" label-width="80px">
-        <div class="input_form">
-          mobile_number:
-          <el-form-item prop="mobile_number">
-            <el-input
-              class="input_form"
-              readonly="true"
-              placeholder="mobile_number"
-              v-model="teleform.mobile_number"
-            >
-            </el-input>
-          </el-form-item>
-        </div>
-
-        <el-form-item prop="code">
+      <el-form :model="verify_form" ref="loginForm" label-width="80px">
+        <el-form-item prop="email" label="email">
           <el-input
-            @keyup.enter.native="submit_verification()"
-            placeholder="code"
-            type="password"
-            v-model="teleform.code"
-            class="input_form"
+              class="input_form"
+              :readonly=true
+              placeholder="email"
+              v-model="verify_form.email"
           >
           </el-input>
         </el-form-item>
+
+        <el-form-item prop="code" label="code" style="width:250px">
+          <el-input
+              @keyup.enter.native="submit_verification()"
+              placeholder="code"
+              type="password"
+              v-model="verify_form.code"
+              class="input_form"
+          >
+          </el-input>
+        </el-form-item>
+        <el-button class="update_code" size="mini" @click="update_code()">update</el-button>
       </el-form>
       <!-- 取消，确定按钮点击事件 -->
       <span slot="footer">
@@ -142,20 +138,21 @@
 </template>
 
 <script>
-import { login, verify, signup } from "@/api/user";
+import { login, verify, signup, apply_code} from "@/api/user";
 import Config from "@/common/config";
+import crypto from "crypto";
 
 export default {
   data: function() {
     return {
       verification_visible_state: false,
       signup_visible_state: false,
-      formData: {
+      login_form: {
         username: "",
         password: ""
       },
-      teleform: {
-        mobile_number: "",
+      verify_form: {
+        email: "",
         code: ""
       },
       signup_form: {
@@ -180,30 +177,41 @@ export default {
     submit_login() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          login(this.formData).then(
+          const hash = crypto.createHash("md5");
+          hash.update(this.login_form.password)
+          const data = {username:this.login_form.username, password:hash.digest('base64')}
+          login(data).then(
             res => {
               if (Config.verify === true) {
-                this.verification_visible_state = true;
-                this.teleform.mobile_number = res.data.data.mobile_number;
+                if(res.data.code===200){
+                  this.verification_visible_state = true;
+                  console.log("email", res.data.data.email)
+                  this.verify_form.email = res.data.data.email;
+                }
+                else{
+                  this.$message.error(res.data.message);
+                }
               } else {
                 this.$router.push({ name: "container" });
               }
-            },
-            err => {
-              this.$message.error(err.response.msg);
             }
           );
         }
       });
     },
     submit_verification() {
-      verify(this.teleform.code).then(
-        ()=> {
-          this.$message.success("welcome:   " + sessionStorage.getItem("username"));
-          this.$router.push({ name: "container" });
-        },
-        err => {
-          this.$message.error(err.response.msg);
+      verify(this.verify_form.code).then(
+        (res)=> {
+          if(res.data.code===200){
+            sessionStorage.setItem("userid", res.data.data._uid)
+            sessionStorage.setItem("username", res.data.data.username)
+            this.$message.success("welcome:   " + sessionStorage.getItem("username"));
+            this.$router.push({ name: "container" });
+            this.$message.success(res.data.message)
+          }
+          else{
+            this.$message.error(res.data.message)
+          }
         }
       );
     },
@@ -214,11 +222,23 @@ export default {
         this.signup_visible_state = false;
         console.log(res);
         if (res) {
-          if (res.data.code == 200) {
+          if (res.data.code === 200) {
             this.$message.success(res.data.message);
           }
         }
       });
+    },
+    update_code(){
+      apply_code().then(res=>{
+        if (res) {
+          if (res.data.code === 200) {
+            this.$message.success(res.data.message);
+          }
+          else{
+            this.$message.error(res.data.message);
+          }
+        }
+      })
     }
   }
 };
@@ -262,7 +282,7 @@ export default {
   position: absolute;
   left: 45%;
   top: 240px;
-  height: 550px;
+  height: 580px;
   width: 500px;
   margin: -190px 0 0 -175px;
   border-radius: 5px;
@@ -271,20 +291,22 @@ export default {
 }
 
 .login-form-content {
+  position:relative;
+  margin-top:5px;
   padding: 45px 45px;
 }
 
 ::v-deep .input_form .el-input__inner {
   position: relative;
-  top: 35px;
-  margin-top: 5px;
+  top:0;
+  margin-top: 0;
   height: 40px;
   border-radius: 30px;
 }
 
 .login-btn {
   position: relative;
-  top: 50px;
+  top: 20px;
   text-align: center;
 }
 
@@ -307,5 +329,10 @@ export default {
 
 .el-radio {
   color: black;
+}
+.update_code{
+  position:absolute;
+  top:142px;
+  right:42px;
 }
 </style>

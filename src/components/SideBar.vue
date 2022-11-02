@@ -87,6 +87,7 @@
 
 <script>
 import { likeUser, dislikeUser, normalUser, getLikeStatus } from "@/api/like";
+import {check_key, check_status} from "@/common/ajax";
 
 export default {
   name: "SideBar",
@@ -100,7 +101,10 @@ export default {
       dislikeBtnType: "default"
     };
   },
-  created() {
+  async created() {
+    await check_key();
+    await check_status()
+    console.log("sidebaruserid", sessionStorage.getItem("userid"))
     this.profileIndex = "/my-profile/" + sessionStorage.getItem("userid");
   },
   methods: {

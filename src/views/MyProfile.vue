@@ -120,11 +120,10 @@
       <div class="map_input_form" :class="{ active: mapisActive }">
         <div class="input_title">city</div>
         <vue-google-autocomplete
-          id="map"
-          placeholder="city"
-          types="(cities)"
-          @placechanged="getAddressData"
-          @inputChange="updateNewAddress"
+            id="map"
+            :placeholder="this.basic_information.city"
+            types="(cities)"
+            @placechanged="getAddressData"
         >
         </vue-google-autocomplete>
       </div>
@@ -447,12 +446,10 @@ export default {
   },
   methods: {
     getAddressData(addressData, placeResultData) {
+      console.log(addressData)
       this.basic_information.latitude = addressData["latitude"];
       this.basic_information.longitude = addressData["longitude"];
-      this.basic_information.location = placeResultData["formatted_address"];
-    },
-    updateNewAddress(val) {
-      this.basic_information.location = val.newVal;
+      this.basic_information.city = placeResultData["formatted_address"];
     },
     edit_profile() {
       this.basicInformationEditing = true;

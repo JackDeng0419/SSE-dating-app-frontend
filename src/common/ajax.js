@@ -4,41 +4,66 @@ import qs from "qs";
 import crypto from "crypto";
 import { Buffer } from "buffer";
 import router from "../router";
+import ElementUI from "element-ui";
+
 
 axios.defaults.withCredentials = true;
 axios.interceptors.response.use(
-  response => {
+  async response => {
     if (
-      response.config.url !== Config.backEndUrl + "/login/RSA" &&
-      response.config.url !== Config.backEndUrl + "/login/AES"
+        response.config.url === Config.backEndUrl + "/login/login" ||
+        response.config.url === Config.backEndUrl + "/login/verify" ||
+        response.config.url === Config.backEndUrl + "/login/signup" ||
+        response.config.url === Config.backEndUrl + "/login/status" ||
+        response.config.url === Config.backEndUrl + "/login/code"
     ) {
-      if (response.data.data !== null) {
-        console.log("response cipher: ", response.data.data);
+      if (response.data.data !== undefined) {
         const plaintext = AES_decrypt(response.data.data);
         response.data.data = JSON.parse(plaintext);
+      }
+    } else {
+      if (
+          response.config.url !== Config.backEndUrl + "/login/RSA" &&
+          response.config.url !== Config.backEndUrl + "/login/AES"
+      ) {
+        if (response.data.code === 400) {
+          await transfer_key()
+          ElementUI.Message({ message: 'session expired, please login', type: 'warning' });
+          await router.push("/login")
+        }
+        else{
+          if (response.data.data !== undefined) {
+            const plaintext = AES_decrypt(response.data.data);
+            response.data.data = JSON.parse(plaintext);
+          }
+        }
       }
     }
     return response;
   },
-  error => {
+  async error => {
+    if(error.response.status === 400){
+      await transfer_key()
+      ElementUI.Message({ message: 'AES key wrong, please re-submit', type: 'warning' });
+    }
     return Promise.reject(error);
   }
 );
 
 export const pureget = async function(url) {
-  await check();
+  await check_key();
   return axios.get(Config.backEndUrl + url);
 };
 
 export const get = async function(url, params) {
-  await check();
+  await check_key();
   return axios.get(Config.backEndUrl + url, {
     params: params
   });
 };
 
 export const post = async function(url, data) {
-  await check();
+  await check_key();
   let new_data = JSON.stringify(data);
   const result = { data: AES_encrypt(new_data) };
   return axios.post(Config.backEndUrl + url, result, {
@@ -49,14 +74,14 @@ export const post = async function(url, data) {
 };
 
 export const del = async function(url, params) {
-  await check();
+  await check_key();
   return axios.delete(Config.backEndUrl + url, {
     params: params
   });
 };
 
 export const put = async function(url, data) {
-  await check();
+  await check_key();
   return axios.put(Config.backEndUrl + url, data, {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"
@@ -85,53 +110,35 @@ export const pre_post = function(url, RSA_key) {
   });
 };
 
-export const check = async function() {
-  if (sessionStorage.getItem("AES_key") === null) {
-    await sessionStorage.setItem(
-      "AES_key",
-      crypto.randomBytes(16).toString("base64")
-    );
-    await sessionStorage.setItem(
-      "AES_iv",
-      crypto.randomBytes(12).toString("base64")
-    );
-    await pre_get("/login/RSA").then(async res => {
-      const RSA_key = res.data.data.public_key;
-      await pre_post("/login/AES", RSA_key).then(async () => {
-        await pre_get("/login/status").then(res => {
-          console.log(res.data.code);
-          if (res.data.code === 200) {
-            sessionStorage.setItem("userid", res.data.data._uid);
-            sessionStorage.setItem("username", res.data.data.username);
-            sessionStorage.setItem(
-              "mobile_number",
-              res.data.data.mobile_number
-            );
-            sessionStorage.setItem("email", res.data.data.email);
-          } else {
-            router.push("/login");
-          }
-        });
-      });
-    });
-  } else {
-    if (sessionStorage.getItem("userid") === null) {
-      console.log("userid", sessionStorage.getItem("userid"));
-      pre_get("/login/status").then(
-        res => {
-          sessionStorage.setItem("userid", res.data._uid);
-          sessionStorage.setItem("username", res.data.username);
-          sessionStorage.setItem("mobile_number", res.data.mobile_number);
-          sessionStorage.setItem("email", res.data.email);
-        },
-        () => {
-          router.push("/login");
-        }
-      );
-    }
-    console.log("userid", sessionStorage.getItem("userid"));
+export const check_key = async function() {
+  if(sessionStorage.getItem("AES_key")===null){
+    await transfer_key();
   }
 };
+
+export const check_status = async function() {
+  await pre_get("/login/status").then(async res => {
+    if (res.data.code === 200) {
+      if (sessionStorage.getItem("userid") === null) {
+        sessionStorage.setItem("userid", res.data.data._uid);
+        sessionStorage.setItem("username", res.data.data.username)
+      }
+      await router.push("/my-profile/" + sessionStorage.getItem("userid"))
+    }
+    else {
+      await router.push("/login")
+    }
+  })
+}
+
+export const transfer_key = async function() {
+  await sessionStorage.setItem("AES_key", crypto.randomBytes(16).toString("base64"));
+  await sessionStorage.setItem("AES_iv", crypto.randomBytes(12).toString("base64"));
+  await pre_get("/login/RSA").then(async res => {
+    const RSA_key = res.data.data.public_key;
+    await pre_post("/login/AES", RSA_key);
+  });
+}
 
 export const AES_decrypt = function(ciphertext) {
   const key = Buffer.from(sessionStorage.getItem("AES_key"), "base64");
