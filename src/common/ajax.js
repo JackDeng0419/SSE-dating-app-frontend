@@ -13,6 +13,7 @@ axios.interceptors.response.use(
       response.config.url !== Config.backEndUrl + "/login/AES"
     ) {
       if (response.data.data !== null) {
+        console.log("response cipher: ", response.data.data);
         const plaintext = AES_decrypt(response.data.data);
         response.data.data = JSON.parse(plaintext);
       }
