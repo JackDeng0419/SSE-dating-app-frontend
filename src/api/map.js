@@ -1,12 +1,11 @@
 import { Loader } from "@googlemaps/js-api-loader"; //引入
-export function initMap() {
+export function initMap(latitude, longitude) {
   const loader = new Loader({
     apiKey: "AIzaSyDTq13m-BZtXffUmP3AMGVrDf7xZCceAlU", //之前的key
     version: "weekly", //版本
     libraries: ["places"]
   });
-
-  let center = { lat: 45.53317193016025, lng: -73.58580366167472 };
+  let center = { lat: latitude, lng: longitude };
   const mapOptions = {
     center: center,
     zoom: 12,

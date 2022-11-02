@@ -72,10 +72,9 @@
         <div class="input_title">city</div>
         <vue-google-autocomplete
             id="map"
-            placeholder="city"
+            :placeholder="this.basic_information.city"
             types="(cities)"
             @placechanged="getAddressData"
-            @inputChange="updateNewAddress"
         >
         </vue-google-autocomplete>
       </div>
@@ -160,7 +159,7 @@
 
 </template>
 <script>
-import {get_basic_information, update_basic_information, profile_gender, get_looks} from "@/api/profile";
+import {get_basic_information, update_basic_information, profile_gender, get_looks} from "@/api/profile";//, profile_age, get_looks} from "@/api/profile";
 import {initMap} from "@/api/map"; //引入
 import VueGoogleAutocomplete from 'vue-google-autocomplete';
 export default {
@@ -185,7 +184,7 @@ export default {
         relationship_status:"",
         profession:"",
         education:"",
-        location:"",
+        city:"",
         latitude: 0,
         longitude: 0
       },
@@ -206,13 +205,13 @@ export default {
     };
   },
 
-  created() {
-    if(this.$route.path==="/my-profile"){
-      this.$router.push("/my-profile/"+sessionStorage.getItem("userid"));
+  async created() {
+    if (this.$route.path === "/my-profile") {
+      this.$router.push("/my-profile/" + sessionStorage.getItem("userid"));
     }
     const tmp_id = this.$route.path.split("/")[2];
     this.isActive = tmp_id !== sessionStorage.getItem("userid");
-    get_basic_information(tmp_id).then((res) => {
+    await get_basic_information(tmp_id).then((res) => {
       sessionStorage.setItem("first_name", res.data["data"].first_name);
       sessionStorage.setItem("last_name", res.data["data"].last_name);
       sessionStorage.setItem("age", res.data["data"].age);
@@ -223,22 +222,28 @@ export default {
       sessionStorage.setItem("relationship_status", res.data["data"].relationship_status);
       sessionStorage.setItem("profession", res.data["data"].profession);
       sessionStorage.setItem("education", res.data["data"].education);
+      sessionStorage.setItem("longitude", res.data["data"].longitude);
+      sessionStorage.setItem("latitude", res.data["data"].latitude);
+      sessionStorage.setItem("city", res.data["data"].city);
       this.basic_information.first_name = sessionStorage.getItem("first_name");
       this.basic_information.last_name = sessionStorage.getItem("last_name");
-      this.basic_information.age = sessionStorage.getItem("age");
-      this.basic_information.gender = sessionStorage.getItem("gender");
+      this.basic_information.age = parseInt(sessionStorage.getItem("age"));
+      this.basic_information.gender = parseInt(sessionStorage.getItem("gender"));
       this.basic_information.preferred_language = sessionStorage.getItem("preferred_language");
       this.basic_information.nationality = sessionStorage.getItem("nationality");
       this.basic_information.birthday = sessionStorage.getItem("birthday");
       this.basic_information.relationship_status = sessionStorage.getItem("relationship_status");
       this.basic_information.profession = sessionStorage.getItem("profession");
       this.basic_information.education = sessionStorage.getItem("education");
-      initMap(this.basic_information.latitude, this.basic_information.longitude);
+      this.basic_information.longitude = parseFloat(sessionStorage.getItem("longitude"));
+      this.basic_information.latitude = parseFloat(sessionStorage.getItem("latitude"));
+      this.basic_information.city = sessionStorage.getItem("city");
       this.profile_readonly = true;
       this.profile_disabled = true;
-    }, (err)=>{
+    }, (err) => {
       this.$message.error(err.response.msg);
-    });
+    })
+    initMap(this.basic_information.latitude, this.basic_information.longitude);
     get_looks(tmp_id).then((res) => {
       sessionStorage.setItem("ethnicity", res.data["data"].ethnicity);
       sessionStorage.setItem("body_type", res.data["data"].body_type);
@@ -258,12 +263,10 @@ export default {
   },
   methods:{
     getAddressData(addressData, placeResultData) {
+      console.log(addressData)
       this.basic_information.latitude = addressData["latitude"];
       this.basic_information.longitude = addressData["longitude"];
-      this.basic_information.location = placeResultData["formatted_address"];
-    },
-    updateNewAddress(val) {
-      this.basic_information.location = val.newVal
+      this.basic_information.city = placeResultData["formatted_address"];
     },
     edit_profile() {
       if(this.profile_readonly === true){
@@ -274,6 +277,19 @@ export default {
       }
       else{
         update_basic_information(this.basic_information);
+        sessionStorage.setItem("first_name", this.basic_information.first_name);
+        sessionStorage.setItem("last_name", this.basic_information.last_name);
+        sessionStorage.setItem("age", this.basic_information.age);
+        sessionStorage.setItem("gender", this.basic_information.gender);
+        sessionStorage.setItem("preferred_language", this.basic_information.preferred_language);
+        sessionStorage.setItem("nationality", this.basic_information.nationality);
+        sessionStorage.setItem("birthday", this.basic_information.birthday);
+        sessionStorage.setItem("relationship_status", this.basic_information.relationship_status);
+        sessionStorage.setItem("profession", this.basic_information.profession);
+        sessionStorage.setItem("education", this.basic_information.education);
+        sessionStorage.setItem("longitude", this.basic_information.longitude);
+        sessionStorage.setItem("latitude", this.basic_information.latitude);
+        sessionStorage.setItem("city", this.basic_information.city);
         initMap(this.basic_information.latitude, this.basic_information.longitude);
         this.profile_readonly = true;
         this.profile_disabled = true;

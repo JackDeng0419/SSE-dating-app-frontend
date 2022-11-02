@@ -109,7 +109,7 @@ export default {
         gender: "",
         region: "",
         city: "",
-        age: { min: 14, max: 150 },
+        age: { min: 18, max: 150 },
         advancedFilter: {
           covid: {
             vaccinated: false
@@ -129,7 +129,8 @@ export default {
   },
   methods: {
     onSubmit() {
-      console.log("submit!");
+      console.log("get user list with filter");
+      this.$emit('queryWithFilter', this.formInline);
     }
   }
 };

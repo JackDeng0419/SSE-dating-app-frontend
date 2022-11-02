@@ -1,7 +1,10 @@
 <template>
   <div class="sidebar">
-    <div class="selfie"></div>
-    <div :class="{ hidden: isHidden }">
+    <el-image
+      src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+      class="nav-image"
+    ></el-image>
+    <div :class="{ hidden: isHidden }" class="like-date">
       <el-button id="button1" @click="dating()" type="primary">like</el-button>
       <el-button id="button1" @click="dating()" type="primary">dislike</el-button>
       <br />
@@ -65,6 +68,8 @@
 </template>
 
 <script>
+import {check_key, check_status} from "@/common/ajax";
+
 export default {
   name: "SideBar",
   data: function() {
@@ -73,7 +78,10 @@ export default {
       profileIndex: "/my-profile/" + sessionStorage.getItem("userid")
     };
   },
-  created() {
+  async created() {
+    await check_key();
+    await check_status()
+    console.log("sidebaruserid", sessionStorage.getItem("userid"))
     this.profileIndex = "/my-profile/" + sessionStorage.getItem("userid");
   },
   methods: {
@@ -113,7 +121,7 @@ export default {
   display: block;
   position: absolute;
   left: 10%;
-  top: 350px;
+  top: 85px;
   bottom: 0;
 }
 
@@ -127,5 +135,21 @@ export default {
 
 .sidebar-el-menu {
   border: 0 !important;
+  margin-top: 20px;
+}
+
+.nav-image {
+  margin: 30px;
+  border-radius: 5px;
+}
+
+.like-date {
+  margin-left: 30px;
+}
+
+.date-btn {
+  /* margin: 0 5px; */
+  margin-top: 20px;
+  width: 180px;
 }
 </style>

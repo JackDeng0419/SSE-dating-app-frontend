@@ -1,8 +1,8 @@
 <template>
   <div>
     <container-title title="Search Mate" />
-    <search-bar />
-    <users-wall :userList="myDislikedUserList"></users-wall>
+    <search-bar @queryWithFilter="queryWithFilter" />
+    <users-wall :userList="userList"></users-wall>
   </div>
 </template>
 
@@ -10,6 +10,7 @@
 import ContainerTitle from "../components/ContainerTitle.vue";
 import SearchBar from "../components/SearchBar.vue";
 import UsersWall from "../components/UsersWall.vue";
+import { getUserList } from "@/api/userList";
 
 export default {
   components: {
@@ -19,57 +20,69 @@ export default {
   },
   data() {
     return {
-      myDislikedUserList: []
+      userList: []
     };
   },
-  mounted: function() {
+  methods: {
+    queryWithFilter(filter) {
+      this.msg = "我的方法被子组件调用了";
+      console.log(filter);
+    }
+  },
+  mounted: async function() {
     console.log("My likes mounted");
-    this.myDislikedUserList = [
-      {
-        avatar:
-          "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      },
-      {
-        avatar:
-          "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
-        username: "zhengjie-deng",
-        userId: "123456",
-        firstName: "Zhengjie",
-        lastName: "Deng",
-        age: "22",
-        gender: "Male",
-        location: "Adelaide"
-      }
-    ];
+
+    // get user list
+    this.userList = await getUserList();
+
+    console.log(this.userList);
+
+    // this.userList = [
+    //   {
+    //     avatar:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //     username: "zhengjie-deng",
+    //     userId: "123456",
+    //     firstName: "Zhengjie",
+    //     lastName: "Deng",
+    //     age: "22",
+    //     gender: "Male",
+    //     location: "Adelaide"
+    //   },
+    //   {
+    //     avatar:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //     username: "zhengjie-deng",
+    //     userId: "123456",
+    //     firstName: "Zhengjie",
+    //     lastName: "Deng",
+    //     age: "22",
+    //     gender: "Male",
+    //     location: "Adelaide"
+    //   },
+    //   {
+    //     avatar:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //     username: "zhengjie-deng",
+    //     userId: "123456",
+    //     firstName: "Zhengjie",
+    //     lastName: "Deng",
+    //     age: "22",
+    //     gender: "Male",
+    //     location: "Adelaide"
+    //   },
+    //   {
+    //     avatar:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //     username: "zhengjie-deng",
+    //     userId: "123456",
+    //     firstName: "Zhengjie",
+    //     lastName: "Deng",
+    //     age: "22",
+    //     gender: "Male",
+    //     location: "Adelaide"
+    //   }
+    // ];
   }
 };
 </script>

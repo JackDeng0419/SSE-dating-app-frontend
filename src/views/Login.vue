@@ -205,8 +205,9 @@ export default {
           if(res.data.code===200){
             sessionStorage.setItem("userid", res.data.data._uid)
             sessionStorage.setItem("username", res.data.data.username)
-            this.$message.success(res.data.message);
+            this.$message.success("welcome:   " + sessionStorage.getItem("username"));
             this.$router.push({ name: "container" });
+            this.$message.success(res.data.message)
           }
           else{
             this.$message.error(res.data.message)
