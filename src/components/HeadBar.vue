@@ -6,7 +6,7 @@
     <div class="logo">dating app</div>
     <div class="head-right">
       <div class="head-user-con">
-        <div class="btn-fullscreen">
+        <!-- <div class="btn-fullscreen">
           <el-tooltip
             :content="fullscreen ? `退出全屏` : `全屏`"
             effect="dark"
@@ -27,7 +27,8 @@
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item command="logout">log out</el-dropdown-item>
           </el-dropdown-menu>
-        </el-dropdown>
+        </el-dropdown> -->
+        <el-button>Log out</el-button>
       </div>
     </div>
   </div>

@@ -120,10 +120,10 @@
       <div class="map_input_form" :class="{ active: mapisActive }">
         <div class="input_title">city</div>
         <vue-google-autocomplete
-            id="map"
-            :placeholder="this.basic_information.city"
-            types="(cities)"
-            @placechanged="getAddressData"
+          id="map"
+          :placeholder="this.basic_information.city"
+          types="(cities)"
+          @placechanged="getAddressData"
         >
         </vue-google-autocomplete>
       </div>
@@ -231,21 +231,21 @@
         <div class="edit-btn">
           <el-button
             v-if="!hobbiesEditing"
-            @click="edit_hobbies()"
+            @click="edit_covid()"
             :class="{ active: isLoginUser }"
             type="primary"
             >Edit</el-button
           >
           <el-button
             v-if="hobbiesEditing"
-            @click="edit_hobbies_cancel()"
+            @click="edit_covid_cancel()"
             :class="{ active: isLoginUser }"
             type="default"
             >Cancel</el-button
           >
           <el-button
             v-if="hobbiesEditing"
-            @click="edit_hobbies_confirm()"
+            @click="edit_covid_confirm()"
             :class="{ active: isLoginUser }"
             type="primary"
             >Confirm</el-button
@@ -270,38 +270,51 @@
         <div class="form-title">&nbsp;&nbsp;Covid information</div>
         <div class="edit-btn">
           <el-button
-            @click="edit_looks()"
+            v-if="!covidEditing"
+            @click="edit_covid()"
             :class="{ active: isLoginUser }"
             type="primary"
-            >confirm</el-button
+            >Edit</el-button
+          >
+          <el-button
+            v-if="covidEditing"
+            @click="edit_covid_cancel()"
+            :class="{ active: isLoginUser }"
+            type="default"
+            >Cancel</el-button
+          >
+          <el-button
+            v-if="covidEditing"
+            @click="edit_covid_confirm()"
+            :class="{ active: isLoginUser }"
+            type="primary"
+            >Confirm</el-button
           >
         </div>
       </div>
-      <el-form :model="covid" class="form" label-width="0px" ref="form">
-        <div class="form_left">
-          <el-form-item class="input_form" prop="vaccination">
-            <div class="input_title">vaccination</div>
-            <el-input
-              :readonly="looks_readonly"
-              class="input_item"
-              placeholder="null"
-              v-model="covid.vaccination"
+      <el-form :model="covid" class="check-form" label-width="0px" ref="form">
+        <el-form-item class="input_form" prop="covid_status">
+          <div class="input_title">Covid Status</div>
+          <el-select
+            :disabled="!covidEditing"
+            class="input_item"
+            v-model="covid.covid_status"
+            placeholder="covid status"
+          >
+            <el-option key="safe" label="safe" :value="0">safe</el-option>
+            <el-option key="closeContact" label="closeContact" :value="1"
+              >close contact</el-option
             >
-            </el-input>
-          </el-form-item>
-        </div>
-        <div class="form_right">
-          <el-form-item class="input_form" prop="other">
-            <div class="input_title">other</div>
-            <el-input
-              :readonly="looks_readonly"
-              class="input_item"
-              placeholder="null"
-              v-model="covid.other"
+            <el-option key="infected" label="infected" :value="2"
+              >infected</el-option
             >
-            </el-input>
-          </el-form-item>
-        </div>
+          </el-select>
+        </el-form-item>
+        <el-form-item class="input_form" :v-bind="covid.vaccinated">
+          <el-checkbox :disabled="!covidEditing" v-model="covid.vaccinated"
+            >Vaccinated</el-checkbox
+          >
+        </el-form-item>
       </el-form>
     </div>
   </div>
@@ -312,8 +325,10 @@ import {
   update_basic_information,
   update_looks,
   update_hobbies,
+  update_covid,
   get_looks,
-  get_hobbies
+  get_hobbies,
+  get_covid
 } from "@/api/profile";
 import { initMap } from "@/api/map"; //引入
 import VueGoogleAutocomplete from "vue-google-autocomplete";
@@ -362,13 +377,15 @@ export default {
       },
       hobby_backup: {},
       covid: {
-        vaccination: "",
-        other: ""
+        vaccinated: false,
+        covid_status: "0"
       },
+      covid_backup: {},
       Height: "400px",
       basicInformationEditing: false,
       looksEditing: false,
-      hobbiesEditing: false
+      hobbiesEditing: false,
+      covidEditing: false
     };
   },
 
@@ -380,6 +397,7 @@ export default {
     this.isLoginUser = tmp_id !== sessionStorage.getItem("userid");
     get_basic_information(tmp_id).then(
       res => {
+        console.log(res);
         sessionStorage.setItem("first_name", res.data["data"].first_name);
         sessionStorage.setItem("last_name", res.data["data"].last_name);
         sessionStorage.setItem("age", res.data["data"].age);
@@ -416,10 +434,7 @@ export default {
         //   "profession"
         // );
         // this.basic_information.education = sessionStorage.getItem("education");
-        initMap(
-          this.basic_information.latitude,
-          this.basic_information.longitude
-        );
+        initMap(res.data.data.latitude, res.data.data.longitude);
         this.profile_readonly = true;
         this.profile_disabled = true;
       },
@@ -446,10 +461,10 @@ export default {
   },
   methods: {
     getAddressData(addressData, placeResultData) {
-      console.log(addressData)
+      console.log(addressData);
       this.basic_information.latitude = addressData["latitude"];
       this.basic_information.longitude = addressData["longitude"];
-      this.basic_information.city = placeResultData["formatted_address"];
+      this.basic_information.location = placeResultData["formatted_address"];
     },
     edit_profile() {
       this.basicInformationEditing = true;
@@ -507,14 +522,6 @@ export default {
       this.looks_backup = { ...this.looks };
       this.looks_readonly = false;
       this.looks_disabled = false;
-      // if (this.looks_readonly === true) {
-      //   this.looks_readonly = false;
-      //   this.looks_disabled = false;
-      // } else {
-      //   //update_basic_information(this.basic_information);
-      //   this.looks_readonly = true;
-      //   this.looks_disabled = true;
-      // }
     },
     edit_looks_cancel() {
       this.looksEditing = false;
@@ -545,14 +552,6 @@ export default {
       this.hobbies_backup = { ...this.hobbies };
       this.hobbies_readonly = false;
       this.hobbies_disabled = false;
-      // if (this.hobbies_readonly === true) {
-      //   this.hobbies_readonly = false;
-      //   this.hobbies_disabled = false;
-      // } else {
-      //   //update_basic_information(this.basic_information);
-      //   this.hobbies_readonly = true;
-      //   this.hobbies_disabled = true;
-      // }
     },
     edit_hobbies_cancel() {
       this.hobbiesEditing = false;
@@ -578,6 +577,36 @@ export default {
       this.hobbies_readonly = true;
       this.hobbies_disabled = true;
     },
+    edit_covid() {
+      this.covidEditing = true;
+      this.covid_backup = { ...this.covid };
+      this.covid_readonly = false;
+      this.covid_disabled = false;
+    },
+    edit_covid_cancel() {
+      this.covidEditing = false;
+      this.covid = { ...this.covid_backup };
+      this.covid_readonly = true;
+      this.covid_disabled = true;
+    },
+    async edit_covid_confirm() {
+      this.covidEditing = false;
+      const { data } = await update_covid(this.covid);
+      if (data.code == 200) {
+        this.$message({
+          message: "update covid info succeeded",
+          type: "success"
+        });
+      } else {
+        this.$message({
+          message: "update covid info failed",
+          type: "error"
+        });
+      }
+
+      this.covid_readonly = true;
+      this.covid_disabled = true;
+    },
     routeChange() {
       console.log(this.$route.path);
       const path = this.$route.path;
@@ -590,6 +619,8 @@ export default {
         console.log("tmp_id", tmp_id);
         get_basic_information(tmp_id).then(
           res => {
+            sessionStorage.setItem("latitude", res.data["data"].latitude);
+            sessionStorage.setItem("longitude", res.data["data"].longitude);
             sessionStorage.setItem("first_name", res.data["data"].first_name);
             sessionStorage.setItem("last_name", res.data["data"].last_name);
             sessionStorage.setItem("age", res.data["data"].age);
@@ -606,6 +637,13 @@ export default {
             );
             sessionStorage.setItem("profession", res.data["data"].profession);
             sessionStorage.setItem("education", res.data["data"].education);
+
+            this.basic_information.longitude = sessionStorage.getItem(
+              "longitude"
+            );
+            this.basic_information.latitude = sessionStorage.getItem(
+              "latitude"
+            );
             this.basic_information.first_name = sessionStorage.getItem(
               "first_name"
             );
@@ -635,10 +673,7 @@ export default {
             this.basic_information.location = "Adelaide SA, Australia";
             this.profile_readonly = true;
             this.profile_disabled = true;
-            initMap(
-              this.basic_information.latitude,
-              this.basic_information.longitude
-            );
+            initMap(res.data.data.latitude, res.data.data.longitude);
           },
           err => {
             this.$message.error(err.response.msg);
@@ -662,6 +697,9 @@ export default {
         });
         get_hobbies(tmp_id).then(res => {
           this.hobbies = res.data.data;
+        });
+        get_covid(tmp_id).then(res => {
+          this.covid = res.data.data;
         });
       }
     }

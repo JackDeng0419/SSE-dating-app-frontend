@@ -19,6 +19,7 @@ export function initMap(latitude, longitude) {
         document.getElementById("mapBox"),
         mapOptions
       );
+      console.log(center);
       new google.maps.Marker({
         position: center,
         map

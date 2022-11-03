@@ -12,9 +12,9 @@
       >
         <el-form-item prop="username" label="username">
           <el-input
-              class="input_form"
-              placeholder="username"
-              v-model="login_form.username"
+            class="input_form"
+            placeholder="username"
+            v-model="login_form.username"
           >
           </el-input>
         </el-form-item>
@@ -48,25 +48,27 @@
       <el-form :model="verify_form" ref="loginForm" label-width="80px">
         <el-form-item prop="email" label="email">
           <el-input
-              class="input_form"
-              :readonly=true
-              placeholder="email"
-              v-model="verify_form.email"
+            class="input_form"
+            :readonly="true"
+            placeholder="email"
+            v-model="verify_form.email"
           >
           </el-input>
         </el-form-item>
 
         <el-form-item prop="code" label="code" style="width:250px">
           <el-input
-              @keyup.enter.native="submit_verification()"
-              placeholder="code"
-              type="password"
-              v-model="verify_form.code"
-              class="input_form"
+            @keyup.enter.native="submit_verification()"
+            placeholder="code"
+            type="password"
+            v-model="verify_form.code"
+            class="input_form"
           >
           </el-input>
         </el-form-item>
-        <el-button class="update_code" size="mini" @click="update_code()">update</el-button>
+        <el-button class="update_code" size="mini" @click="update_code()"
+          >update</el-button
+        >
       </el-form>
       <!-- 取消，确定按钮点击事件 -->
       <span slot="footer">
@@ -94,14 +96,6 @@
           </el-input>
         </el-form-item>
 
-        <el-form-item prop="mobile_number" label="Mobile Number">
-          <el-input
-            placeholder="mobile_number"
-            v-model="signup_form.mobile_number"
-          >
-          </el-input>
-        </el-form-item>
-
         <el-form-item prop="email" label="Email">
           <el-input placeholder="email" v-model="signup_form.email"> </el-input>
         </el-form-item>
@@ -114,8 +108,8 @@
           </el-input>
         </el-form-item>
         <el-form-item prop="gender" class="register-gender" label="Gender">
-          <el-radio v-model="signup_form.gender" label="1">Male</el-radio>
-          <el-radio v-model="signup_form.gender" label="2">Female</el-radio>
+          <el-radio v-model="signup_form.gender" :label="0">Male</el-radio>
+          <el-radio v-model="signup_form.gender" :label="1">Female</el-radio>
         </el-form-item>
         <el-form-item prop="age" label="Age">
           <el-input-number
@@ -138,7 +132,7 @@
 </template>
 
 <script>
-import { login, verify, signup, apply_code} from "@/api/user";
+import { login, verify, signup, apply_code } from "@/api/user";
 import Config from "@/common/config";
 import crypto from "crypto";
 
@@ -158,11 +152,10 @@ export default {
       signup_form: {
         username: "",
         password: "",
-        mobile_number: "",
         email: "",
         first_name: "",
         last_name: "",
-        gender: "",
+        gender: 1,
         age: 0
       },
       rules: {
@@ -178,42 +171,41 @@ export default {
       this.$refs.form.validate(valid => {
         if (valid) {
           const hash = crypto.createHash("md5");
-          hash.update(this.login_form.password)
-          const data = {username:this.login_form.username, password:hash.digest('base64')}
-          login(data).then(
-            res => {
-              if (Config.verify === true) {
-                if(res.data.code===200){
-                  this.verification_visible_state = true;
-                  console.log("email", res.data.data.email)
-                  this.verify_form.email = res.data.data.email;
-                }
-                else{
-                  this.$message.error(res.data.message);
-                }
+          hash.update(this.login_form.password);
+          const data = {
+            username: this.login_form.username,
+            password: hash.digest("base64")
+          };
+          login(data).then(res => {
+            if (Config.verify === true) {
+              if (res.data.code === 200) {
+                this.verification_visible_state = true;
+                console.log("email", res.data.data.email);
+                this.verify_form.email = res.data.data.email;
               } else {
-                this.$router.push({ name: "container" });
+                this.$message.error(res.data.message);
               }
+            } else {
+              this.$router.push({ name: "container" });
             }
-          );
+          });
         }
       });
     },
     submit_verification() {
-      verify(this.verify_form.code).then(
-        (res)=> {
-          if(res.data.code===200){
-            sessionStorage.setItem("userid", res.data.data._uid)
-            sessionStorage.setItem("username", res.data.data.username)
-            this.$message.success("welcome:   " + sessionStorage.getItem("username"));
-            this.$router.push({ name: "container" });
-            this.$message.success(res.data.message)
-          }
-          else{
-            this.$message.error(res.data.message)
-          }
+      verify(this.verify_form.code).then(res => {
+        if (res.data.code === 200) {
+          sessionStorage.setItem("userid", res.data.data._uid);
+          sessionStorage.setItem("username", res.data.data.username);
+          this.$message.success(
+            "welcome:   " + sessionStorage.getItem("username")
+          );
+          this.$router.push({ name: "container" });
+          this.$message.success(res.data.message);
+        } else {
+          this.$message.error(res.data.message);
         }
-      );
+      });
     },
     submit_signup() {
       // TODO: check null input
@@ -228,17 +220,16 @@ export default {
         }
       });
     },
-    update_code(){
-      apply_code().then(res=>{
+    update_code() {
+      apply_code().then(res => {
         if (res) {
           if (res.data.code === 200) {
             this.$message.success(res.data.message);
-          }
-          else{
+          } else {
             this.$message.error(res.data.message);
           }
         }
-      })
+      });
     }
   }
 };
@@ -291,14 +282,14 @@ export default {
 }
 
 .login-form-content {
-  position:relative;
-  margin-top:5px;
+  position: relative;
+  margin-top: 5px;
   padding: 45px 45px;
 }
 
 ::v-deep .input_form .el-input__inner {
   position: relative;
-  top:0;
+  top: 0;
   margin-top: 0;
   height: 40px;
   border-radius: 30px;
@@ -330,9 +321,9 @@ export default {
 .el-radio {
   color: black;
 }
-.update_code{
-  position:absolute;
-  top:142px;
-  right:42px;
+.update_code {
+  position: absolute;
+  top: 142px;
+  right: 42px;
 }
 </style>

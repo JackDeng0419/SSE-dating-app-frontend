@@ -13,15 +13,19 @@
           circle
           icon="el-icon-star-on"
           class="like-icon"
-        ></el-button>
+        >
+          <!-- <i class="el-icon-fa fa-heart"></i> -->
+        </el-button>
         <el-button
           id="button1"
           @click="dislike()"
           :type="dislikeBtnType"
           circle
-          icon="el-icon-error"
+          icon="el-icon-circle-close"
           class="like-icon"
-        ></el-button>
+        >
+          <!-- <i class="el-icon-fa fa-thumbs-down"></i> -->
+        </el-button>
       </div>
       <br />
       <el-button id="button1" @click="dating()" type="primary">date</el-button>
@@ -38,32 +42,32 @@
       text-color="#ffffff"
     >
       <el-menu-item class="item" :index="profileIndex" key="/myProfile">
-        <i class="el-icon-fa fa-bar-chart"></i>
+        <i class="el-icon-fa fa-user"></i>
         <span slot="title">My Profile</span>
       </el-menu-item>
       <el-submenu class="item" index="/my-date" key="/my-date">
         <template slot="title">
-          <i class="el-icon-fa fa-bar-chart"></i>
+          <i class="el-icon-fa fa-calendar"></i>
           <span slot="title">My Dates</span>
         </template>
         <el-menu-item class="item" index="/date-from-me" key="/date-from-me">
-          <i class="el-icon-fa fa-bar-chart"></i>
+          <i class="el-icon-fa fa-calendar"></i>
           <span slot="title">Dates From Me</span>
         </el-menu-item>
         <el-menu-item class="item" index="/date-to-me" key="/date-to-me">
-          <i class="el-icon-fa fa-bar-chart"></i>
+          <i class="el-icon-fa fa-calendar"></i>
           <span slot="title">Dates To Me</span>
         </el-menu-item>
       </el-submenu>
 
       <hr />
       <el-menu-item class="item" index="/search-mate" key="/search-mate">
-        <i class="el-icon-fa fa-bar-chart"></i>
+        <i class="el-icon-fa fa-users"></i>
         <span slot="title">Search Mate</span>
       </el-menu-item>
 
       <el-menu-item class="item" index="/who-liked-me" key="/who-liked-me">
-        <i class="el-icon-fa fa-bar-chart"></i>
+        <i class="el-icon-fa fa-heart"></i>
         <span slot="title">Who Likes Me</span>
       </el-menu-item>
 
@@ -73,12 +77,12 @@
       </el-menu-item> -->
 
       <el-menu-item class="item" index="/my-liked" key="/my-liked">
-        <i class="el-icon-fa fa-bar-chart"></i>
+        <i class="el-icon-fa fa-heart"></i>
         <span slot="title">My Likes</span>
       </el-menu-item>
 
       <el-menu-item class="item" index="/my-disliked" key="/my-disliked">
-        <i class="el-icon-fa fa-bar-chart"></i>
+        <i class="el-icon-fa fa-thumbs-down"></i>
         <span slot="title">My Dislike</span>
       </el-menu-item>
     </el-menu>
@@ -87,7 +91,8 @@
 
 <script>
 import { likeUser, dislikeUser, normalUser, getLikeStatus } from "@/api/like";
-import {check_key, check_status} from "@/common/ajax";
+import { get_covid } from "@/api/profile";
+import { check_status, check_key } from "@/common/ajax";
 
 export default {
   name: "SideBar",
@@ -103,14 +108,31 @@ export default {
   },
   async created() {
     await check_key();
-    await check_status()
-    console.log("sidebaruserid", sessionStorage.getItem("userid"))
+    await check_status();
+    console.log("sidebaruserid", sessionStorage.getItem("userid"));
     this.profileIndex = "/my-profile/" + sessionStorage.getItem("userid");
   },
   methods: {
-    dating() {
+    async dating() {
       this.$parent.dating_visible_state = true;
       this.$parent.dating_form.toId = this.currentUserId;
+      get_covid(this.currentUserId).then(({ data }) => {
+        this.$parent.target_covid_status = data.data.covid_status;
+
+        // switch (target_covid_status) {
+        //   case 0:
+        //     this.$parent.target_covid_status = "safe";
+        //     break;
+        //   case 1:
+        //     this.$parent.target_covid_status = "close contact";
+        //     break;
+        //   case 2:
+        //     this.$parent.target_covid_status = "infected";
+        //     break;
+        //   default:
+        //     break;
+        // }
+      });
     },
     like() {
       if (this.likeStatus == 1) {
@@ -262,9 +284,18 @@ export default {
 }
 
 .like-icon {
-  font-size: 30px;
+  font-size: 40px;
   margin: 0 10px;
+  /* width: 60px;
+  height: 60px;
+  display: flex;
+  align-content: center;
+  justify-content: center; */
 }
+
+/* .like-btn-icon {
+  width: 40px;
+} */
 
 .date-btn {
   /* margin: 0 5px; */

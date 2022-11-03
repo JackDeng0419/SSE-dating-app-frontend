@@ -14,7 +14,12 @@
       width="600px"
       center
     >
-      <el-form :model="dating_form" ref="dating_form" label-width="80px">
+      <el-form
+        :model="dating_form"
+        ref="dating_form"
+        label-width="40px"
+        class="date-form"
+      >
         <el-form-item prop="date">
           <el-date-picker
             v-model="dating_form.dateTime"
@@ -49,6 +54,20 @@
           >
         </el-form-item>
       </el-form>
+      <div class="covid-info">
+        <div>
+          His/Her covid status:
+          <span v-if="target_covid_status == 0">
+            <el-tag>safe</el-tag>
+          </span>
+          <span v-else-if="target_covid_status == 1">
+            <el-tag type="warning">close contact</el-tag>
+          </span>
+          <span v-else-if="target_covid_status == 2">
+            <el-tag type="danger">infected</el-tag>
+          </span>
+        </div>
+      </div>
       <!-- 取消，确定按钮点击事件 -->
       <span slot="footer">
         <el-button size="mini" @click="dating_visible_state = false"
@@ -82,28 +101,43 @@ export default {
         city: "",
         dateTime: "",
         location: "",
-        maskRequired: "false"
-      }
+        maskRequired: false
+      },
+      target_covid_status: "safe"
     };
   },
   methods: {
     submitDate() {
       console.log(this.dating_form);
-      sendDate({ ...this.dating_form }).then(({ data }) => {
-        console.log(data);
-        if (data.code == 200) {
+
+      let hasEmptyInput = false;
+      Object.keys(this.dating_form).forEach(key => {
+        if (this.dating_form[key] == "" && !hasEmptyInput) {
           this.$message({
-            message: "Date sent",
-            type: "success"
-          });
-        } else {
-          this.$message({
-            message: "Date sending failed",
+            message: key + " cannot be empty",
             type: "error"
           });
+          hasEmptyInput = true;
         }
-        this.dating_visible_state = false;
       });
+
+      if (!hasEmptyInput) {
+        sendDate({ ...this.dating_form }).then(({ data }) => {
+          console.log(data);
+          if (data.code == 200) {
+            this.$message({
+              message: "Date sent",
+              type: "success"
+            });
+          } else {
+            this.$message({
+              message: "Date sending failed",
+              type: "error"
+            });
+          }
+          this.dating_visible_state = false;
+        });
+      }
     }
   },
   async created() {
@@ -126,5 +160,17 @@ export default {
   bottom: 0;
   background: transparent;
   color: white;
+}
+
+.date-form {
+  padding-right: 30px;
+}
+
+.covid-info {
+  margin-left: 40px;
+}
+
+.covid-info > * {
+  margin-bottom: 20px;
 }
 </style>

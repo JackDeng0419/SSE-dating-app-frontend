@@ -57,7 +57,20 @@
                 v-model="formInline.advancedFilter.covid.vaccinated"
                 label="Vaccinated"
                 border
+                style="margin-right: 20px"
               ></el-checkbox>
+              <el-select
+                v-model="formInline.advancedFilter.covid_status"
+                placeholder="covid status"
+              >
+                <el-option key="safe" label="safe" :value="0">safe</el-option>
+                <el-option key="closeContact" label="close contact" :value="1"
+                  >close contact</el-option
+                >
+                <el-option key="infected" label="infected" :value="2"
+                  >infected</el-option
+                >
+              </el-select>
             </el-tab-pane>
             <el-tab-pane label="Hobby" name="Hobby" class="hobby"
               ><el-checkbox
@@ -106,13 +119,14 @@ export default {
   data() {
     return {
       formInline: {
-        gender: "",
+        gender: 3,
         region: "",
         city: "",
         age: { min: 18, max: 150 },
         advancedFilter: {
           covid: {
-            vaccinated: false
+            vaccinated: false,
+            covid_status: 0
           },
           hobby: {
             sport: false,
@@ -130,7 +144,7 @@ export default {
   methods: {
     onSubmit() {
       console.log("get user list with filter");
-      this.$emit('queryWithFilter', this.formInline);
+      this.$emit("queryWithFilter", this.formInline);
     }
   }
 };
