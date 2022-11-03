@@ -7,6 +7,10 @@ export const signup = formdata => {
   return post("/login/signup", formdata);
 }
 
+export const signup_apply_code = (formdata) =>{
+  return post("/login/signup/code", formdata)
+}
+
 export const apply_code = () => {
   return pureget("/login/code");
 };

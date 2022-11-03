@@ -31,9 +31,7 @@
 
         <div class="login-btn">
           <el-button @click="submit_login()" type="primary">Confirm</el-button>
-          <el-button @click="signup_visible_state = true" type="primary"
-            >Signup</el-button
-          >
+          <el-button @click="signup_visible_state = true" type="primary">Signup</el-button>
         </div>
       </el-form>
     </div>
@@ -55,9 +53,8 @@
           </el-input>
         </el-form-item>
 
-        <el-form-item prop="code" label="code" style="width:250px">
+        <el-form-item prop="code" label="code" label-width="80px" style="width:250px">
           <el-input
-              @keyup.enter.native="submit_verification()"
               placeholder="code"
               type="password"
               v-model="verify_form.code"
@@ -69,9 +66,7 @@
       </el-form>
       <!-- 取消，确定按钮点击事件 -->
       <span slot="footer">
-        <el-button size="mini" @click="verification_visible_state = false"
-          >cancel</el-button
-        >
+        <el-button size="mini" @click="verification_visible_state = false">cancel</el-button>
         <el-button size="mini" @click="submit_verification()">login</el-button>
       </span>
     </el-dialog>
@@ -84,26 +79,22 @@
     >
       <el-form :model="signup_form" :rules="signup_rules" label-width="120px" ref="signup_form">
         <el-form-item prop="username" label="Username">
-          <el-input placeholder="username" v-model="signup_form.username">
-          </el-input>
+          <el-input placeholder="username" v-model="signup_form.username"></el-input>
         </el-form-item>
 
         <el-form-item prop="password" label="Password">
-          <el-input placeholder="password" v-model="signup_form.password">
-          </el-input>
+          <el-input placeholder="password" v-model="signup_form.password"></el-input>
         </el-form-item>
 
-        <el-form-item prop="mobile_number" label="Mobile Number">
-          <el-input
-            placeholder="mobile_number"
-            v-model="signup_form.mobile_number"
-          >
-          </el-input>
+        <el-form-item prop="email" label="email">
+          <el-input placeholder="email" v-model="signup_form.email"></el-input>
         </el-form-item>
 
-        <el-form-item prop="email" label="Email">
-          <el-input placeholder="email" v-model="signup_form.email"> </el-input>
+        <el-form-item prop="code" label="code" style="width:300px">
+          <el-input placeholder="code" v-model="signup_form.code"></el-input>
         </el-form-item>
+        <el-button class="signup_update_code" size="mini" @click="signup_update_code()">apply</el-button>
+
         <el-form-item prop="first_name" label="First Name">
           <el-input placeholder="first name" v-model="signup_form.first_name">
           </el-input>
@@ -135,7 +126,7 @@
 </template>
 
 <script>
-import { login, verify, signup, apply_code} from "@/api/user";
+import { login, verify, signup, signup_apply_code, apply_code} from "@/api/user";
 import Config from "@/common/config";
 import crypto from "crypto";
 
@@ -155,8 +146,8 @@ export default {
       signup_form: {
         username: "",
         password: "",
-        mobile_number: "",
         email: "",
+        code: "",
         first_name: "",
         last_name: "",
         gender: "",
@@ -169,10 +160,10 @@ export default {
       signup_rules:{
         username: [{ required: true, message: "please input username", trigger: "blur" }],
         password: [{ required: true, message: "please input password", trigger: "blur" }],
-        mobile_number: [{ required: true, message: "please input mobile number", trigger: "blur" }],
+        email:[{ required: true, message: "please input email", trigger: "blur" }],
+        code: [{ required: true, message: "please verify your email", trigger: "blur" }],
         first_name:[{ required: true, message: "please input first name", trigger: "blur" }],
         last_name: [{ required: true, message: "please input last name", trigger: "blur" }],
-        email: [{ required: true, message: "please input email", trigger: "blur" }],
         gender: [{ required: true, message: "please choose gender", trigger: "blur" }],
       }
     };
@@ -208,10 +199,9 @@ export default {
         (res)=> {
           if(res.data.code===200){
             sessionStorage.setItem("userid", res.data.data._uid)
-            sessionStorage.setItem("username", res.data.data.username)
-            this.$message.success("welcome:   " + sessionStorage.getItem("username"));
-            this.$router.push({ name: "container" });
+            sessionStorage.setItem("username", res.data.data.username);
             this.$message.success(res.data.message)
+            this.$router.push({ name: "container" });
           }
           else{
             this.$message.error(res.data.message)
@@ -227,8 +217,8 @@ export default {
           const data = {
             username: this.signup_form.username,
             password: hash.digest('base64'),
-            mobile_number: this.signup_form.mobile_number,
             email: this.signup_form.email,
+            code: this.signup_form.code,
             first_name: this.signup_form.first_name,
             last_name: this.signup_form.last_name,
             gender: this.signup_form.gender,
@@ -261,9 +251,26 @@ export default {
           }
         }
       })
+    },
+    signup_update_code(){
+      if(this.signup_form.email===""){
+        this.$message.error("please input the email");
+      }
+      else{
+        signup_apply_code({email:this.signup_form.email}).then(res=>{
+          if (res) {
+            if (res.data.code === 200) {
+              this.$message.success(res.data.message);
+            }
+            else{
+              this.$message.error(res.data.message);
+            }
+          }
+        })
+      }
     }
   }
-};
+}
 </script>
 
 <style scoped>
@@ -356,5 +363,10 @@ export default {
   position:absolute;
   top:142px;
   right:42px;
+}
+.signup_update_code{
+  position:absolute;
+  top:267px;
+  right:210px;
 }
 </style>

@@ -22,7 +22,8 @@ axios.interceptors.response.use(
         response.config.url === Config.backEndUrl + "/login/verify" ||
         response.config.url === Config.backEndUrl + "/login/signup" ||
         response.config.url === Config.backEndUrl + "/login/status" ||
-        response.config.url === Config.backEndUrl + "/login/code"
+        response.config.url === Config.backEndUrl + "/login/code" ||
+        response.config.url === Config.backEndUrl + "/login/signup/code"
     ) {
       if (response.data.data !== undefined) {
         const plaintext = AES_decrypt(response.data.data);

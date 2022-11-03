@@ -482,7 +482,7 @@ export default {
     async edit_profile_confirm() {
       this.basicInformationEditing = false;
       const { data } = await update_basic_information(this.basic_information);
-      if (data.code == 200) {
+      if (data.code === 200) {
         this.$message({
           message: "update profile succeeded",
           type: "success"
