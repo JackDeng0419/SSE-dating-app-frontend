@@ -1,54 +1,80 @@
 <template>
   <div class="chat">
-    <el-dialog :visible.sync="chat_visible" width="70%" :before-close="handleClose">
+    <el-dialog
+      :visible.sync="chat_visible"
+      width="70%"
+      :before-close="handleClose"
+    >
       <el-row :span="24">
         <div class="chat_box" v-if="chat_visible">
           <div class="session_box">
-
             <div class="t_left_bot" v-if="rListOff">
               <div
-                  v-for="(item,index) in rList"
-                  :key="index"
-                  @click="setZi(item.conversationID,item.userProfile.userID,item.userProfile.avatar,item.userProfile.nick)"
-                  :class="{ active:item.conversationID===isActive }"
+                v-for="(item, index) in rList"
+                :key="index"
+                @click="
+                  setZi(
+                    item.conversationID,
+                    item.userProfile.userID,
+                    item.userProfile.avatar,
+                    item.userProfile.nick
+                  )
+                "
+                :class="{ active: item.conversationID === isActive }"
               >
-                <img :src="item.userProfile.avatar || defaultAvatar" style="background: #c1c1c1;"  alt=""/>
-                <div>{{item.userProfile.userID}}</div>
-                <div v-show="item.lastMessage">{{item.lastMessage.messageForShow}}</div>
-                <div>{{item.lastMessage.lastTime | offTime}}</div>
-                <div
-                    v-if="item.unreadCount !== 0"
-                >{{item.unreadCount > 99 ? '99+' : item.unreadCount}}</div>
+                <img
+                  :src="item.userProfile.avatar || defaultAvatar"
+                  style="background: #c1c1c1;"
+                  alt=""
+                />
+                <div>{{ item.userProfile.userID }}</div>
+                <div v-show="item.lastMessage">
+                  {{ item.lastMessage.messageForShow }}
+                </div>
+                <div>{{ item.lastMessage.lastTime | offTime }}</div>
+                <div v-if="item.unreadCount !== 0">
+                  {{ item.unreadCount > 99 ? "99+" : item.unreadCount }}
+                </div>
               </div>
             </div>
           </div>
           <!-- v-if="rRightOff" -->
           <div class="t_right">
             <!--名字-->
-            <div class="t_right_top">{{chatName}}</div>
+            <div class="t_right_top">{{ chatName }}</div>
             <!--内容-->
             <div class="t_right_con" id="t_right_con">
               <div v-if="hList.isCompleted" class="t_r_nmore">no more</div>
               <div v-else class="t_r_more" @click="seeMore()">see more</div>
               <div v-if="hList">
-                <div class="hList-left" v-for="(item,index) in hList.messageList" :key="index">
+                <div
+                  class="hList-left"
+                  v-for="(item, index) in hList.messageList"
+                  :key="index"
+                >
                   <!--他人发送的消息-->
                   <div class="hList-left-a" v-if="item.to !== toUserId">
-                    <img class="hlAva" :src="avatar || defaultAvatar"  alt=""/>
+                    <img class="hlAva" :src="avatar || defaultAvatar" alt="" />
                     <div>
                       <!-- 判断消息是否是文字或者表情 -->
-                      <div v-if="item.type === 'TIMTextElem'" v-html="item.payload.text"></div>
+                      <div
+                        v-if="item.type === 'TIMTextElem'"
+                        v-html="item.payload.text"
+                      ></div>
                       <!-- 消息时间 -->
-                      <div>{{item.time | offTime}}</div>
+                      <div>{{ item.time | offTime }}</div>
                     </div>
                   </div>
                   <!--我自己发送的消息-->
                   <div class="hList-left-b" v-else>
                     <div>
                       <!-- 判断消息是否是文字或者表情 -->
-                      <div v-if="item.type === 'TIMTextElem'" v-html="item.payload.text"></div>
+                      <div
+                        v-if="item.type === 'TIMTextElem'"
+                        v-html="item.payload.text"
+                      ></div>
                       <!-- 消息时间 -->
-                      <div>{{item.time | offTime}}</div>
+                      <div>{{ item.time | offTime }}</div>
                     </div>
                     <img class="hlAva" :src="myAvatar" />
                   </div>
@@ -60,13 +86,15 @@
             <div class="t_right_bot">
               <div>
                 <textarea
-                    placeholder="请输入消息内容，最多可输入200个字"
-                    v-model="textarea"
-                    maxlength="200"
-                    @keydown="messageSendlisten"
+                  placeholder="请输入消息内容，最多可输入200个字"
+                  v-model="textarea"
+                  maxlength="200"
+                  @keydown="messageSendlisten"
                 ></textarea>
                 <!-- <div class="t_limit">当前还可发送{{200-(textarea.length)}}个字</div> -->
-                <el-button class="r_i" @click="setButton" type="primary">发送</el-button>
+                <el-button class="r_i" @click="setButton" type="primary"
+                  >发送</el-button
+                >
               </div>
             </div>
           </div>
@@ -81,17 +109,17 @@
 </template>
 
 <script>
-import TIM from 'tim-js-sdk';
-import {genTestUserSig} from "@/common/GenerateTestUserSig";
+import TIM from "tim-js-sdk";
+import { genTestUserSig } from "@/common/GenerateTestUserSig";
 export default {
   name: "chat",
   data() {
     return {
       chat_visible: false,
       defaultAvatar:
-       "https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=1651318081,2860235060&fm=26&gp=0.jpg", //默认头像,如果用户没有上传头像或者头像路径错误展示这个路径
+        "https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=1651318081,2860235060&fm=26&gp=0.jpg", //默认头像,如果用户没有上传头像或者头像路径错误展示这个路径
       myAvatar:
-          "https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=2519824424,1132423651&fm=26&gp=0.jpg", //我的头像
+        "https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=2519824424,1132423651&fm=26&gp=0.jpg", //我的头像
       chatName: "", //查看的某个人name
       toUserId: "", //查看的某个人id
       avatar: "", //查看的某个人avatar
@@ -104,37 +132,40 @@ export default {
       // emojiMap: emojiMap,
       // emojiUrl: emojiUrl,
       rList: [], //会话列表
-      hList: [], //具体信息
+      hList: [] //具体信息
     };
   },
   filters: {
     //接收时间
-    offTime: function (value) {
+    offTime: function(value) {
       const v = value;
       const date = new Date(v * 1000);
       var Y = date.getFullYear() + "-";
       var M =
-          (date.getMonth() + 1 < 10
-              ? "0" + (date.getMonth() + 1)
-              : date.getMonth() + 1) + "-";
+        (date.getMonth() + 1 < 10
+          ? "0" + (date.getMonth() + 1)
+          : date.getMonth() + 1) + "-";
       var D = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
       var h =
-          (date.getHours() < 10 ? "0" + date.getHours() : date.getHours()) + ":";
+        (date.getHours() < 10 ? "0" + date.getHours() : date.getHours()) + ":";
       var m =
-          date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+        date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
       let dt = new Date(Date.parse(new Date()));
       let current = dt.getFullYear() + "-" + dt.getMonth() + "-" + dt.getDate();
       let system =
-          date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate();
+        date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate();
       if (current === system) {
         return h + m;
       } else {
         return Y + M + D;
       }
-    },
+    }
   },
-  created(){
-    this.logData("1", genTestUserSig("1"));
+  created() {
+    this.logData(
+      sessionStorage.getItem("userid"),
+      genTestUserSig(sessionStorage.getItem("userid"))
+    );
   },
   methods: {
     seeMore() {
@@ -143,12 +174,12 @@ export default {
       let promise = this.tim.getMessageList({
         conversationID: self.hList.messageList[0].conversationID,
         nextReqMessageID,
-        count: 15,
+        count: 15
       });
-      promise.then(function (imResponse) {
+      promise.then(function(imResponse) {
         self.hList.messageList = [
           ...imResponse.data.messageList,
-          ...self.hList.messageList,
+          ...self.hList.messageList
         ];
         self.hList.nextReqMessageID = imResponse.data.nextReqMessageID; // 分页
         self.hList.isCompleted = imResponse.data.isCompleted; // 是否已经拉完
@@ -203,14 +234,14 @@ export default {
     read(id) {
       let promise = this.tim.setMessageRead({ conversationID: id });
       promise
-          .then(function (imResponse) {
-            // 已读上报成功，指定 ID 的会话的 unreadCount 属性值被置为0
-            console.warn("setMessageRead error:", imResponse);
-          })
-          .catch(function (imError) {
-            // 已读上报失败
-            console.warn("setMessageRead error:", imError);
-          });
+        .then(function(imResponse) {
+          // 已读上报成功，指定 ID 的会话的 unreadCount 属性值被置为0
+          console.warn("setMessageRead error:", imResponse);
+        })
+        .catch(function(imError) {
+          // 已读上报失败
+          console.warn("setMessageRead error:", imError);
+        });
     },
     //发送消息
     setButton() {
@@ -218,27 +249,32 @@ export default {
       if (self.textarea.split(" ").join("").length === 0)
         return this.$message({
           message: "请输入正确信息",
-          type: "warning",
+          type: "warning"
         });
       let message = this.tim.createTextMessage({
-        to: "2",//self.hList.userID ? self.hList.userID : "约定的名字_" + self.userIdMsg,
+        to: this.toUserId, //self.hList.userID ? self.hList.userID : "约定的名字_" + self.userIdMsg,
         // to: "youqianchengjin_" + self.userIdMsg,
         conversationType: TIM.TYPES.CONV_C2C,
         payload: {
-          text: self.textarea,
-        },
+          text: self.textarea
+        }
       });
       // 发送消息
-      this.tim.sendMessage(message).then(function (imResponse) {
-            // 发送成功
-            self.textarea = "";
-            self.hList.messageList.push(imResponse.data.message);
-            self.below();
-          })
-          .catch(function (imError) {
-            // 发送失败
-            console.warn("sendMessage error:", imError);
-          });
+      this.tim
+        .sendMessage(message)
+        .then(function(imResponse) {
+          // 发送成功
+          self.textarea = "";
+          if (self.hList.messageList == undefined) {
+            self.hList.messageList = [];
+          }
+          self.hList.messageList.push(imResponse.data.message);
+          self.below();
+        })
+        .catch(function(imError) {
+          // 发送失败
+          console.warn("sendMessage error:", imError);
+        });
     },
     //获取会话资料
     setZi(conversationID, userID, avatar, chatName) {
@@ -252,67 +288,74 @@ export default {
       self.avatar = avatar;
       self.isActive = conversationID;
       self.chatName = chatName || userID;
-      this.tim.getMessageList({
-        conversationID: conversationID,
-        count: 15,
-      }).then(function (imResponse) {
-        let hList = {};
-        hList.messageList = imResponse.data.messageList; // 消息列表。
-        hList.nextReqMessageID = imResponse.data.nextReqMessageID; // 用于续拉，分页续拉时需传入该字段。
-        hList.isCompleted = imResponse.data.isCompleted; // 表示是否已经拉完所有消息。
-        hList.userID = userID; // 点击进去的用户id。
-        hList.conversationID = conversationID;
-        self.hList = hList;
-        console.log("hlist==========", hList.messageList);
-        if (self.hList) self.rRightOff = true;
-        self.below();
-        //设置消息已读
-        self.read(conversationID);
-      });
+      this.tim
+        .getMessageList({
+          conversationID: conversationID,
+          count: 15
+        })
+        .then(function(imResponse) {
+          let hList = {};
+          hList.messageList = imResponse.data.messageList; // 消息列表。
+          hList.nextReqMessageID = imResponse.data.nextReqMessageID; // 用于续拉，分页续拉时需传入该字段。
+          hList.isCompleted = imResponse.data.isCompleted; // 表示是否已经拉完所有消息。
+          hList.userID = userID; // 点击进去的用户id。
+          hList.conversationID = conversationID;
+          self.hList = hList;
+          console.log("hlist==========", hList.messageList);
+          if (self.hList) self.rRightOff = true;
+          self.below();
+          //设置消息已读
+          self.read(conversationID);
+        });
     },
     //获取会话列表
     hlData() {
       const self = this;
-      this.tim.getConversationList().then(function (imResponse) {
-            console.log("sessionlist===============", imResponse.data.conversationList);
-            self.rList = imResponse.data.conversationList;
-            self.rListOff = true;
-          })
-          .catch(function (imError) {
-            console.log(imError);
-          });
+      this.tim
+        .getConversationList()
+        .then(function(imResponse) {
+          console.log(
+            "sessionlist===============",
+            imResponse.data.conversationList
+          );
+          self.rList = imResponse.data.conversationList;
+          self.rListOff = true;
+        })
+        .catch(function(imError) {
+          console.log(imError);
+        });
     },
     logData(userID, userSig) {
       const self = this;
       console.log("logData =============", userID, userSig);
 
       // 监听事件
-      this.tim.on(TIM.EVENT.SDK_READY, function (event) {
+      this.tim.on(TIM.EVENT.SDK_READY, function(event) {
         // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
         console.log("SDK_READY ===================", event);
         self.hlData();
       });
 
-      this.tim.on(TIM.EVENT.ERROR, function (event) {
+      this.tim.on(TIM.EVENT.ERROR, function(event) {
         // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
         console.error("ERROR ===================", event);
       });
 
-      this.tim.on(TIM.EVENT.KICKED_OUT, function (event) {
+      this.tim.on(TIM.EVENT.KICKED_OUT, function(event) {
         // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
         console.error("KICKED_OUT ===================", event);
       });
 
-      this.tim.on(TIM.EVENT.NET_STATE_CHANGE, function (event) {
+      this.tim.on(TIM.EVENT.NET_STATE_CHANGE, function(event) {
         // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
         console.error("NET_STATE_CHANGE ===================", event);
       });
 
       console.log(
-          "this.TIM.EVENT.MESSAGE_RECEIVED",
-          TIM.EVENT.MESSAGE_RECEIVED
+        "this.TIM.EVENT.MESSAGE_RECEIVED",
+        TIM.EVENT.MESSAGE_RECEIVED
       );
-      this.tim.on(TIM.EVENT.MESSAGE_RECEIVED, function (event) {
+      this.tim.on(TIM.EVENT.MESSAGE_RECEIVED, function(event) {
         // 收到推送的单聊、群聊、群提示、群系统通知的新消息，可通过遍历 event.data 获取消息列表数据并渲染到页面
         console.log("MESSAGE_RECEIVED ===================");
         self.hlData();
@@ -329,42 +372,53 @@ export default {
 
       let promise = this.tim.login({ userID: userID, userSig: userSig });
       promise
-          .then(function (imResponse) {
-            console.log("login success ======================");
-            //获取会话列表
-            if (imResponse.data.repeatLogin === true) {
-              // 标识账号已登录，本次登录操作为重复登录。v2.5.1 起支持
-              console.log(imResponse.data.errorInfo);
-            }
-          })
-          .catch(function (imError) {
-            console.warn("login error:", imError); // 登录失败的相关信息
-          });
+        .then(function(imResponse) {
+          console.log("login success ======================");
+          //获取会话列表
+          if (imResponse.data.repeatLogin === true) {
+            // 标识账号已登录，本次登录操作为重复登录。v2.5.1 起支持
+            console.log(imResponse.data.errorInfo);
+          }
+        })
+        .catch(function(imError) {
+          console.warn("login error:", imError); // 登录失败的相关信息
+        });
     },
     handleClose() {
       this.chat_visible = false;
-    },
+    }
+  },
+  watch: {
+    $route(to) {
+      const string = to.path.split("/");
+      if (string.length === 3) {
+        if (string[1] === "my-profile") {
+          const id = string[2];
+          this.toUserId = id;
+        }
+      }
+    }
   },
   destroyed() {
     let promise = this.tim.logout();
-     promise
-       .then(function (imResponse) {
-         console.log(imResponse.data);
-       })
-       .catch(function (imError) {
-         console.warn("logout error:", imError);
-       });
-  },
+    promise
+      .then(function(imResponse) {
+        console.log(imResponse.data);
+      })
+      .catch(function(imError) {
+        console.warn("logout error:", imError);
+      });
+  }
 };
 </script>
 
 <style scoped lang="scss">
-.chat{
-  position:absolute;
+.chat {
+  position: absolute;
   border-radius: 20px 20px 20px 20px;
-  top:50px;
-  right:15%;
-  left:15%;
+  top: 50px;
+  right: 15%;
+  left: 15%;
 }
 @mixin toCla {
   color: #a5b5c1;

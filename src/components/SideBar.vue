@@ -191,6 +191,7 @@ export default {
     },
     message() {
       console.log(this.$parent.$children[2]);
+      // this.$parent.$children[2].chat_visible = true;
       this.$parent.$children[2].chat_visible = true;
     }
   },
