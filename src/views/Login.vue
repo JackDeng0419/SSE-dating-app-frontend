@@ -5,10 +5,10 @@
       <div class="form-subtitle">Login to your account</div>
       <el-form
         :model="login_form"
-        :rules="rules"
+        :rules="login_rules"
         class="login-form-content"
         label-width="0px"
-        ref="form"
+        ref="login_form"
       >
         <el-form-item prop="username" label="username">
           <el-input
@@ -21,7 +21,6 @@
 
         <el-form-item prop="password" label="password">
           <el-input
-            @keyup.enter.native="submit()"
             placeholder="password"
             type="password"
             v-model="login_form.password"
@@ -56,9 +55,13 @@
           </el-input>
         </el-form-item>
 
-        <el-form-item prop="code" label="code" style="width:250px">
+        <el-form-item
+          prop="code"
+          label="code"
+          label-width="80px"
+          style="width:250px"
+        >
           <el-input
-            @keyup.enter.native="submit_verification()"
             placeholder="code"
             type="password"
             v-model="verify_form.code"
@@ -85,20 +88,40 @@
       width="600px"
       center
     >
-      <el-form :model="signup_form" ref="registerForm" label-width="120px">
+      <el-form
+        :model="signup_form"
+        :rules="signup_rules"
+        label-width="120px"
+        ref="signup_form"
+      >
         <el-form-item prop="username" label="Username">
-          <el-input placeholder="username" v-model="signup_form.username">
-          </el-input>
+          <el-input
+            placeholder="username"
+            v-model="signup_form.username"
+          ></el-input>
         </el-form-item>
 
         <el-form-item prop="password" label="Password">
-          <el-input placeholder="password" v-model="signup_form.password">
-          </el-input>
+          <el-input
+            placeholder="password"
+            v-model="signup_form.password"
+          ></el-input>
         </el-form-item>
 
-        <el-form-item prop="email" label="Email">
-          <el-input placeholder="email" v-model="signup_form.email"> </el-input>
+        <el-form-item prop="email" label="email">
+          <el-input placeholder="email" v-model="signup_form.email"></el-input>
         </el-form-item>
+
+        <el-form-item prop="code" label="code" style="width:300px">
+          <el-input placeholder="code" v-model="signup_form.code"></el-input>
+        </el-form-item>
+        <el-button
+          class="signup_update_code"
+          size="mini"
+          @click="signup_update_code()"
+          >apply</el-button
+        >
+
         <el-form-item prop="first_name" label="First Name">
           <el-input placeholder="first name" v-model="signup_form.first_name">
           </el-input>
@@ -132,7 +155,13 @@
 </template>
 
 <script>
-import { login, verify, signup, apply_code } from "@/api/user";
+import {
+  login,
+  verify,
+  signup,
+  signup_apply_code,
+  apply_code
+} from "@/api/user";
 import Config from "@/common/config";
 import crypto from "crypto";
 
@@ -153,22 +182,56 @@ export default {
         username: "",
         password: "",
         email: "",
+        code: "",
         first_name: "",
         last_name: "",
         gender: 1,
         age: 0
       },
-      rules: {
+      login_rules: {
         username: [
-          { required: true, message: "请输入用户名", trigger: "blur" }
+          { required: true, message: "please input username", trigger: "blur" }
         ],
-        password: [{ required: true, message: "请输入密码", trigger: "blur" }]
+        password: [
+          { required: true, message: "please input password", trigger: "blur" }
+        ]
+      },
+      signup_rules: {
+        username: [
+          { required: true, message: "please input username", trigger: "blur" }
+        ],
+        password: [
+          { required: true, message: "please input password", trigger: "blur" }
+        ],
+        email: [
+          { required: true, message: "please input email", trigger: "blur" }
+        ],
+        code: [
+          {
+            required: true,
+            message: "please verify your email",
+            trigger: "blur"
+          }
+        ],
+        first_name: [
+          {
+            required: true,
+            message: "please input first name",
+            trigger: "blur"
+          }
+        ],
+        last_name: [
+          { required: true, message: "please input last name", trigger: "blur" }
+        ],
+        gender: [
+          { required: true, message: "please choose gender", trigger: "blur" }
+        ]
       }
     };
   },
   methods: {
     submit_login() {
-      this.$refs.form.validate(valid => {
+      this.$refs.login_form.validate(valid => {
         if (valid) {
           const hash = crypto.createHash("md5");
           hash.update(this.login_form.password);
@@ -197,26 +260,43 @@ export default {
         if (res.data.code === 200) {
           sessionStorage.setItem("userid", res.data.data._uid);
           sessionStorage.setItem("username", res.data.data.username);
-          this.$message.success(
-            "welcome:   " + sessionStorage.getItem("username")
-          );
-          this.$router.push({ name: "container" });
           this.$message.success(res.data.message);
+          this.$router.push({ name: "container" });
         } else {
           this.$message.error(res.data.message);
         }
       });
     },
     submit_signup() {
-      // TODO: check null input
-      // TODO: hash the password
-      signup(this.signup_form).then(res => {
-        this.signup_visible_state = false;
-        console.log(res);
-        if (res) {
-          if (res.data.code === 200) {
-            this.$message.success(res.data.message);
-          }
+      this.$refs.signup_form.validate(valid => {
+        if (valid) {
+          const hash = crypto.createHash("md5");
+          hash.update(this.signup_form.password);
+          const data = {
+            username: this.signup_form.username,
+            password: hash.digest("base64"),
+            email: this.signup_form.email,
+            code: this.signup_form.code,
+            first_name: this.signup_form.first_name,
+            last_name: this.signup_form.last_name,
+            gender: this.signup_form.gender,
+            age: this.signup_form.age
+          };
+          signup(data).then(
+            res => {
+              if (res) {
+                if (res.data.code === 200) {
+                  this.signup_visible_state = false;
+                  this.$message.success(res.data.message);
+                } else {
+                  this.$message.error(res.data.message);
+                }
+              }
+            },
+            err => {
+              this.$message.error(err.message);
+            }
+          );
         }
       });
     },
@@ -230,6 +310,21 @@ export default {
           }
         }
       });
+    },
+    signup_update_code() {
+      if (this.signup_form.email === "") {
+        this.$message.error("please input the email");
+      } else {
+        signup_apply_code({ email: this.signup_form.email }).then(res => {
+          if (res) {
+            if (res.data.code === 200) {
+              this.$message.success(res.data.message);
+            } else {
+              this.$message.error(res.data.message);
+            }
+          }
+        });
+      }
     }
   }
 };
@@ -325,5 +420,10 @@ export default {
   position: absolute;
   top: 142px;
   right: 42px;
+}
+.signup_update_code {
+  position: absolute;
+  top: 267px;
+  right: 210px;
 }
 </style>

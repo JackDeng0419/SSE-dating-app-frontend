@@ -26,7 +26,7 @@ export default {
     const { data: result } = await getMyDislikesUserList();
     console.log(result);
     if (result != null) {
-      if (result.code == 200) {
+      if (result.code === 200) {
         this.myDislikedUserList = result.data;
       } else {
         this.$message.error(result.message);

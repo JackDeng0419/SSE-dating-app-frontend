@@ -26,7 +26,7 @@ export default {
     const { data: result } = await getMyLikesUserList();
     console.log(result);
     if (result != null) {
-      if (result.code == 200) {
+      if (result.code === 200) {
         this.myLikedUserList = result.data;
       } else {
         this.$message.error(result.message);

@@ -8,6 +8,13 @@ import ElementUI from "element-ui";
 
 
 axios.defaults.withCredentials = true;
+axios.interceptors.request.use(function(config) {
+  //比如是否需要设置 token
+  if(config.url!==Config.backEndUrl + "/login/RSA" && config.url!==Config.backEndUrl + "/login/AES"){
+    config.headers._csrf = sessionStorage.getItem("csrf")
+  }
+  return config
+})
 axios.interceptors.response.use(
   async response => {
     if (
@@ -15,7 +22,8 @@ axios.interceptors.response.use(
         response.config.url === Config.backEndUrl + "/login/verify" ||
         response.config.url === Config.backEndUrl + "/login/signup" ||
         response.config.url === Config.backEndUrl + "/login/status" ||
-        response.config.url === Config.backEndUrl + "/login/code"
+        response.config.url === Config.backEndUrl + "/login/code" ||
+        response.config.url === Config.backEndUrl + "/login/signup/code"
     ) {
       if (response.data.data !== undefined) {
         const plaintext = AES_decrypt(response.data.data);
@@ -23,8 +31,7 @@ axios.interceptors.response.use(
       }
     } else {
       if (
-          response.config.url !== Config.backEndUrl + "/login/RSA" &&
-          response.config.url !== Config.backEndUrl + "/login/AES"
+          response.config.url !== Config.backEndUrl + "/login/RSA"
       ) {
         if (response.data.code === 400) {
           await transfer_key()
@@ -42,7 +49,7 @@ axios.interceptors.response.use(
     return response;
   },
   async error => {
-    if(error.response.status === 400){
+    if(error.response.status === 403){
       await transfer_key()
       ElementUI.Message({ message: 'AES key wrong, please re-submit', type: 'warning' });
     }
@@ -101,7 +108,8 @@ export const pre_post = function(url, RSA_key) {
   const cipher_iv = RSA_encrypt(plain_iv, publickey).toString("base64");
   let formData = {
     key: cipher_key,
-    iv: cipher_iv
+    iv: cipher_iv,
+    signal: 1
   };
   return axios.post(Config.backEndUrl + url, qs.stringify(formData), {
     headers: {
@@ -111,7 +119,7 @@ export const pre_post = function(url, RSA_key) {
 };
 
 export const check_key = async function() {
-  if(sessionStorage.getItem("AES_key")===null){
+  if(sessionStorage.getItem("AES_key")===null || sessionStorage.getItem("csrf")===null){
     await transfer_key();
   }
 };
@@ -136,7 +144,9 @@ export const transfer_key = async function() {
   await sessionStorage.setItem("AES_iv", crypto.randomBytes(12).toString("base64"));
   await pre_get("/login/RSA").then(async res => {
     const RSA_key = res.data.data.public_key;
-    await pre_post("/login/AES", RSA_key);
+    await pre_post("/login/AES", RSA_key).then(async res =>{
+      sessionStorage.setItem("csrf", res.data.data._csrf)
+    });
   });
 }
 
