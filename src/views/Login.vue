@@ -5,10 +5,10 @@
       <div class="form-subtitle">Login to your account</div>
       <el-form
         :model="login_form"
-        :rules="rules"
+        :rules="login_rules"
         class="login-form-content"
         label-width="0px"
-        ref="form"
+        ref="login_form"
       >
         <el-form-item prop="username" label="username">
           <el-input
@@ -21,7 +21,6 @@
 
         <el-form-item prop="password" label="password">
           <el-input
-            @keyup.enter.native="submit()"
             placeholder="password"
             type="password"
             v-model="login_form.password"
@@ -83,7 +82,7 @@
       width="600px"
       center
     >
-      <el-form :model="signup_form" ref="registerForm" label-width="120px">
+      <el-form :model="signup_form" :rules="signup_rules" label-width="120px" ref="signup_form">
         <el-form-item prop="username" label="Username">
           <el-input placeholder="username" v-model="signup_form.username">
           </el-input>
@@ -114,8 +113,8 @@
           </el-input>
         </el-form-item>
         <el-form-item prop="gender" class="register-gender" label="Gender">
-          <el-radio v-model="signup_form.gender" label="1">Male</el-radio>
-          <el-radio v-model="signup_form.gender" label="2">Female</el-radio>
+          <el-radio v-model="signup_form.gender" label=1>Male</el-radio>
+          <el-radio v-model="signup_form.gender" label=2>Female</el-radio>
         </el-form-item>
         <el-form-item prop="age" label="Age">
           <el-input-number
@@ -128,9 +127,7 @@
       </el-form>
       <!-- 取消，确定按钮点击事件 -->
       <span slot="footer">
-        <el-button size="mini" @click="signup_visible_state = false"
-          >cancel</el-button
-        >
+        <el-button size="mini" @click="signup_visible_state = false">cancel</el-button>
         <el-button size="mini" @click="submit_signup()">Confirm</el-button>
       </span>
     </el-dialog>
@@ -165,17 +162,24 @@ export default {
         gender: "",
         age: 0
       },
-      rules: {
-        username: [
-          { required: true, message: "请输入用户名", trigger: "blur" }
-        ],
-        password: [{ required: true, message: "请输入密码", trigger: "blur" }]
+      login_rules: {
+        username: [{ required: true, message: "please input username", trigger: "blur" }],
+        password: [{ required: true, message: "please input password", trigger: "blur" }]
+      },
+      signup_rules:{
+        username: [{ required: true, message: "please input username", trigger: "blur" }],
+        password: [{ required: true, message: "please input password", trigger: "blur" }],
+        mobile_number: [{ required: true, message: "please input mobile number", trigger: "blur" }],
+        first_name:[{ required: true, message: "please input first name", trigger: "blur" }],
+        last_name: [{ required: true, message: "please input last name", trigger: "blur" }],
+        email: [{ required: true, message: "please input email", trigger: "blur" }],
+        gender: [{ required: true, message: "please choose gender", trigger: "blur" }],
       }
     };
   },
   methods: {
     submit_login() {
-      this.$refs.form.validate(valid => {
+      this.$refs.login_form.validate(valid => {
         if (valid) {
           const hash = crypto.createHash("md5");
           hash.update(this.login_form.password)
@@ -216,17 +220,35 @@ export default {
       );
     },
     submit_signup() {
-      // TODO: check null input
-      // TODO: hash the password
-      signup(this.signup_form).then(res => {
-        this.signup_visible_state = false;
-        console.log(res);
-        if (res) {
-          if (res.data.code === 200) {
-            this.$message.success(res.data.message);
+      this.$refs.signup_form.validate(valid => {
+        if(valid){
+          const hash = crypto.createHash("md5");
+          hash.update(this.signup_form.password)
+          const data = {
+            username: this.signup_form.username,
+            password: hash.digest('base64'),
+            mobile_number: this.signup_form.mobile_number,
+            email: this.signup_form.email,
+            first_name: this.signup_form.first_name,
+            last_name: this.signup_form.last_name,
+            gender: this.signup_form.gender,
+            age: this.signup_form.age
           }
+          signup(data).then(res => {
+            if (res) {
+              if (res.data.code === 200) {
+                this.signup_visible_state = false;
+                this.$message.success(res.data.message);
+              }
+              else{
+                this.$message.error(res.data.message);
+              }
+            }
+          }, err=>{
+            this.$message.error(err.message)
+          });
         }
-      });
+      })
     },
     update_code(){
       apply_code().then(res=>{
