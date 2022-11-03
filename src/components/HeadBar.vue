@@ -28,18 +28,42 @@
             <el-dropdown-item command="logout">log out</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown> -->
-        <el-button>Log out</el-button>
+        <el-button @click="logout">Log out</el-button>
+        <el-button @click="chat">chat</el-button>
       </div>
     </div>
   </div>
 </template>
 <script>
+import {logout} from "@/api/user";
+
 export default {
   name: "Header",
   data() {
     return {
       fullscreen: false
     };
+  },
+  methods: {
+    logout(){
+      logout().then(res=>{
+        if(res.data.code===200){
+          sessionStorage.clear()
+          this.$router.push("/login")
+          this.$message.success(res.data.message)
+        }
+        else{
+          this.$message.error(res.data.message)
+        }
+      })
+    },
+    chat(){
+      this.$parent.$children[2].rListOff = true;
+      this.$parent.$children[2].chat_visible = true;
+      this.$parent.$children[2].session_box_width='260px'
+      this.$parent.$children[2].chat_box_width='70%'
+      this.$parent.$children[2].hlData()
+    }
   }
 };
 </script>

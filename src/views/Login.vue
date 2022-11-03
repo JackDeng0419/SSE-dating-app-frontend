@@ -166,6 +166,7 @@ import Config from "@/common/config";
 import crypto from "crypto";
 import { genTestUserSig } from "@/common/GenerateTestUserSig";
 import TIM from "tim-js-sdk";
+import {check_key} from "@/common/ajax";
 
 export default {
   data: function() {
@@ -231,6 +232,9 @@ export default {
       }
     };
   },
+  async created() {
+    await check_key()
+  },
   methods: {
     submit_login() {
       this.$refs.login_form.validate(valid => {
@@ -269,6 +273,15 @@ export default {
         }
       });
     },
+    update_nikename(nikename){
+      this.tim.updateMyProfile({
+        nick: nikename,//this.signup_form.first_name + ' '+this.signup_form.last_name,
+      }).then(function(imResponse) {
+        console.log(imResponse.data); // 更新资料成功
+      }).catch(function(imError) {
+        console.warn('updateMyProfile error:', imError); // 更新资料失败的相关信息
+      });
+    },
     submit_signup() {
       this.$refs.signup_form.validate(valid => {
         if (valid) {
@@ -285,76 +298,30 @@ export default {
             age: this.signup_form.age
           };
           signup(data).then(
-            res => {
+            async res => {
               if (res) {
                 if (res.data.code === 200) {
                   this.signup_visible_state = false;
-                  this.$message.success(res.data.message);
-                  const self = this;
-                  const username = res.data.data.username;
-                  const userSig = genTestUserSig(username);
-                  console.log("logData =============", username, userSig);
+                  this.$message.success(this.signup_form.last_name);
+                  const userID = res.data.data._uid.toString();
+                  const userSig = genTestUserSig(userID);
 
-                  // 监听事件
+                  this.tim.login({
+                    userID: userID,
+                    userSig: userSig
+                  }).then(function (imResponse) {
+                    if (imResponse.data.repeatLogin === true) {
+                      console.log(imResponse.data.errorInfo);
+                    }
+                  }).catch(function (imError) {
+                    console.warn("login error:", imError); // 登录失败的相关信息
+                  });
+                  const self = this;
                   this.tim.on(TIM.EVENT.SDK_READY, function(event) {
                     // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
                     console.log("SDK_READY ===================", event);
-                    self.hlData();
+                    self.update_nikename(self.signup_form.first_name+" "+self.signup_form.last_name)
                   });
-
-                  this.tim.on(TIM.EVENT.ERROR, function(event) {
-                    // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
-                    console.error("ERROR ===================", event);
-                  });
-
-                  this.tim.on(TIM.EVENT.KICKED_OUT, function(event) {
-                    // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
-                    console.error("KICKED_OUT ===================", event);
-                  });
-
-                  this.tim.on(TIM.EVENT.NET_STATE_CHANGE, function(event) {
-                    // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
-                    console.error(
-                      "NET_STATE_CHANGE ===================",
-                      event
-                    );
-                  });
-
-                  console.log(
-                    "this.TIM.EVENT.MESSAGE_RECEIVED",
-                    TIM.EVENT.MESSAGE_RECEIVED
-                  );
-                  this.tim.on(TIM.EVENT.MESSAGE_RECEIVED, function(event) {
-                    // 收到推送的单聊、群聊、群提示、群系统通知的新消息，可通过遍历 event.data 获取消息列表数据并渲染到页面
-                    console.log("MESSAGE_RECEIVED ===================");
-                    self.hlData();
-                    if (self.hList) {
-                      if (event.data[0].from === self.hList.userID) {
-                        // console.log('这是正在聊天的聊天界面')
-                        // console.log(event.data[0].conversationID)
-                        self.read(event.data[0].conversationID);
-                        self.hList.messageList.push(event.data[0]);
-                        self.below();
-                      }
-                    }
-                  });
-
-                  let promise = this.tim.login({
-                    username: username,
-                    userSig: userSig
-                  });
-                  promise
-                    .then(function(imResponse) {
-                      console.log("login success ======================");
-                      //获取会话列表
-                      if (imResponse.data.repeatLogin === true) {
-                        // 标识账号已登录，本次登录操作为重复登录。v2.5.1 起支持
-                        console.log(imResponse.data.errorInfo);
-                      }
-                    })
-                    .catch(function(imError) {
-                      console.warn("login error:", imError); // 登录失败的相关信息
-                    });
                 } else {
                   this.$message.error(res.data.message);
                 }

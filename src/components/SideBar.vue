@@ -106,11 +106,14 @@ export default {
       dislikeBtnType: "default"
     };
   },
-  async created() {
-    await check_key();
-    await check_status();
-    console.log("sidebaruserid", sessionStorage.getItem("userid"));
-    this.profileIndex = "/my-profile/" + sessionStorage.getItem("userid");
+  mounted() {
+    let pMountedTimer = window.setInterval(() => {
+      if (window.parentMounted) {
+        window.clearInterval(pMountedTimer);
+        // 下面就可以写子组件想在mounted时执行代码（此时父组件的mounted已经执行完毕）
+        this.profileIndex = "/my-profile/" + sessionStorage.getItem("userid");
+      }
+    }, 500);
   },
   methods: {
     async dating() {
@@ -189,10 +192,31 @@ export default {
         }
       });
     },
-    message() {
-      console.log(this.$parent.$children[2]);
-      // this.$parent.$children[2].chat_visible = true;
+    async message() {
+      console.log("111111111111111111111111111",this.$parent.$children)
+      this.$parent.$children[2].rListOff = false;
       this.$parent.$children[2].chat_visible = true;
+      this.$parent.$children[2].session_box_width = '0px'
+      this.$parent.$children[2].chat_box_width = '50%'
+      await this.$parent.$children[2].hlData()
+      this.$parent.$children[2].toUserId = this.currentUserId
+      let judge = 0
+      for (const item of this.$parent.$children[2].rList){
+        if(item.userProfile.userID===this.currentUserId){
+          this.$parent.$children[2].setZi(
+              item.conversationID,
+              item.userProfile.userID,
+              item.userProfile.avatar,
+              item.userProfile.nick
+          )
+          judge = 1
+          break
+        }
+      }
+      if(judge===0){
+        this.$parent.$children[2].chatName = sessionStorage.getItem("first_name") + " " + sessionStorage.getItem("last_name")
+        this.$parent.$children[2].hList = {messageList:[], isCompleted:true}
+      }
     }
   },
   watch: {

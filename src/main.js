@@ -15,6 +15,7 @@ Vue.component("v-chart", ECharts);
 
 import TIM from "tim-js-sdk";
 import COS from "_cos-js-sdk-v5@1.4.6@cos-js-sdk-v5";
+import {check_key, check_status} from "@/common/ajax";
 let options = {
   SDKAppID: 1400747994 // 接入时需要将0替换为您的即时通信 IM 应用的 SDKAppID
 };
@@ -25,6 +26,7 @@ tim.setLogLevel(0); // 普通级别，日志量较多，接入时建议使用
 // 注册 COS SDK 插件
 tim.registerPlugin({ "cos-js-sdk": COS });
 Vue.prototype.tim = tim;
+
 new Vue({
   router,
   store,
