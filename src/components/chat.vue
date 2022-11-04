@@ -93,7 +93,7 @@
                   @keydown="messageSendlisten"
                 ></textarea>
                 <!-- <div class="t_limit">当前还可发送{{200-(textarea.length)}}个字</div> -->
-                <el-button class="r_i" @click="setButton" type="primary">send</el-button>
+                <el-button class="r_i" v-if="toUserId!==null" @click="setButton" type="primary">send</el-button>
               </div>
             </div>
           </div>
@@ -163,15 +163,17 @@ export default {
     }
   },
   mounted() {
-    let pMountedTimer = window.setInterval(() => {
-      if (window.parentMounted) {
-        window.clearInterval(pMountedTimer);
-        this.logData(
-            sessionStorage.getItem("userid"),
-            genTestUserSig(sessionStorage.getItem("userid"))
-        );
-      }
-    }, 500);
+    if(sessionStorage.getItem("userid")!==null){
+      let pMountedTimer = window.setInterval(() => {
+        if (window.parentMounted) {
+          window.clearInterval(pMountedTimer);
+          this.logData(
+              sessionStorage.getItem("userid"),
+              genTestUserSig(sessionStorage.getItem("userid"))
+          );
+        }
+      }, 500);
+    }
   },
   methods: {
     seeMore() {
@@ -255,6 +257,7 @@ export default {
           message: "please input correct message",
           type: "warning"
         });
+      console.log("1111111111111111111111",this.toUserId)
       let message = this.tim.createTextMessage({
         to: this.toUserId, //self.hList.userID ? self.hList.userID : "约定的名字_" + self.userIdMsg,
         // to: "youqianchengjin_" + self.userIdMsg,

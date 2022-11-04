@@ -58,6 +58,7 @@ export default {
       })
     },
     chat(){
+      this.$parent.$children[2].toUserId = null;
       this.$parent.$children[2].rListOff = true;
       this.$parent.$children[2].chat_visible = true;
       this.$parent.$children[2].session_box_width='260px'

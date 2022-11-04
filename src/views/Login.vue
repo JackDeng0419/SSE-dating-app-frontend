@@ -167,6 +167,7 @@ import crypto from "crypto";
 import { genTestUserSig } from "@/common/GenerateTestUserSig";
 import TIM from "tim-js-sdk";
 import {check_key} from "@/common/ajax";
+import {validateEMail, validatePsdReg, validateUsername} from "@/api/valid";
 
 export default {
   data: function() {
@@ -193,21 +194,26 @@ export default {
       },
       login_rules: {
         username: [
-          { required: true, message: "please input username", trigger: "blur" }
+          { required: true, message: "please input username", trigger: "blur" },
+          { validator: validateUsername, trigger: 'blur'}
         ],
         password: [
-          { required: true, message: "please input password", trigger: "blur" }
+          { required: true, message: "please input password", trigger: "blur" },
+          { validator: validatePsdReg, trigger: 'blur'}
         ]
       },
       signup_rules: {
         username: [
-          { required: true, message: "please input username", trigger: "blur" }
+          { required: true, message: "please input username", trigger: "blur" },
+          { validator: validateUsername, trigger: 'blur'}
         ],
         password: [
-          { required: true, message: "please input password", trigger: "blur" }
+          { required: true, message: "please input password", trigger: "blur" },
+          { validator: validatePsdReg, trigger: 'blur'}
         ],
         email: [
-          { required: true, message: "please input email", trigger: "blur" }
+          { required: true, message: "please input email", trigger: "blur" },
+          { validator: validateEMail, trigger: 'blur'}
         ],
         code: [
           {
@@ -249,7 +255,7 @@ export default {
             if (Config.verify === true) {
               if (res.data.code === 200) {
                 this.verification_visible_state = true;
-                console.log("email", res.data.data.email);
+                this.$message.success(res.data.message);
                 this.verify_form.email = res.data.data.email;
               } else {
                 this.$message.error(res.data.message);
