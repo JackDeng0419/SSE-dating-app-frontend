@@ -60,10 +60,10 @@ axios.interceptors.response.use(
   },
   async error => {
     console.log(error.response.status)
-    if(error.response.status === 403){
-      await transfer_key()
-      ElementUI.Message({ message: 'AES key wrong, please re-submit', type: 'warning' });
-    }
+    //if(error.response.status === 403){
+    //  await transfer_key()
+    //  ElementUI.Message({ message: 'AES key wrong, please re-submit', type: 'warning' });
+    //}
     return Promise.reject(error);
   }
 );
@@ -155,6 +155,7 @@ export const transfer_key = async function() {
   await sessionStorage.setItem("AES_iv", crypto.randomBytes(12).toString("base64"));
   await pre_get("/login/RSA").then(async res => {
     const RSA_key = res.data.data.public_key;
+    console.log("1-----------------------",res)
     sessionStorage.setItem("csrf", res.data.data._csrf)
     await pre_post("/login/AES", RSA_key);
   });

@@ -30,8 +30,8 @@
         </el-form-item>
 
         <div class="login-btn">
-          <el-button @click="submit_login()" type="primary">Confirm</el-button>
-          <el-button @click="signup_visible_state = true" type="primary"
+          <el-button v-preventClick @click="submit_login()" type="primary">Confirm</el-button>
+          <el-button v-preventClick @click="signup_visible_state = true" type="primary"
             >Signup</el-button
           >
         </div>
@@ -352,18 +352,25 @@ export default {
       });
     },
     signup_update_code() {
-      if (this.signup_form.email === "") {
-        this.$message.error("please input the email");
-      } else {
-        signup_apply_code({ email: this.signup_form.email }).then(res => {
-          if (res) {
-            if (res.data.code === 200) {
-              this.$message.success(res.data.message);
-            } else {
-              this.$message.error(res.data.message);
+      const reg =/^([a-zA-Z0-9]+[-_]?)+@[a-zA-Z0-9]+\.[a-z]+$/;
+      if(this.signup_form.email===''||this.signup_form.email===undefined||this.signup_form.email==null){
+        this.$message.error("please input email");
+      }
+      else{
+        if (!reg.test(this.signup_form.email)){
+          this.$message.error("email format is not correct");
+        }
+        else{
+          signup_apply_code({ email: this.signup_form.email }).then(res => {
+            if (res) {
+              if (res.data.code === 200) {
+                this.$message.success(res.data.message);
+              } else {
+                this.$message.error(res.data.message);
+              }
             }
-          }
-        });
+          });
+        }
       }
     }
   }

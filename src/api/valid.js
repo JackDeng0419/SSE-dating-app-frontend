@@ -1,5 +1,5 @@
 export function validateEMail(rule, value,callback) {
-    const reg =/^([a-zA-Z0-9]+[-_\.]?)+@[a-zA-Z0-9]+\.[a-z]+$/;
+    const reg =/^([a-zA-Z0-9]+[-_]?)+@[a-zA-Z0-9]+\.[a-z]+$/;
     if(value===''||value===undefined||value==null){
         callback();
     }else{
@@ -25,7 +25,7 @@ export const validateUsername = (rule, value, callback) => {
     if (!value) {
         return callback(new Error('please input username'))
     }
-    if (!/^(?![0-9]*$)(?![a-zA-Z]*$)[a-zA-Z0-9]{6,20}$/.test(value)) {
+    if (!/^[a-zA-Z0-9]{6,20}$/.test(value)) {
         callback(new Error('username should be the combination of 6-20 characters and numbers'))
     } else {
         callback()
