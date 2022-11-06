@@ -4,9 +4,18 @@
     </el-table-column>
     <el-table-column prop="name" label="Name" width="120"> </el-table-column>
     <el-table-column prop="city" label="City" width="120"> </el-table-column>
-    <el-table-column prop="address" label="Address" width="300">
+    <el-table-column prop="address" label="Address" width="200">
     </el-table-column>
-    <el-table-column prop="state" label="State" width="120">
+    <el-table-column prop="covid_status" label="Covid Status" width="120">
+      <template slot-scope="scope">
+        <el-tag
+          :type="tagTypeCovidStatus(scope.row.covid_status)"
+          disable-transitions
+          >{{ scope.row.covid_status }}</el-tag
+        >
+      </template>
+    </el-table-column>
+    <el-table-column prop="state" label="State" width="80">
       <template slot-scope="scope">
         <el-tag :type="tagType(scope.row.state)" disable-transitions>{{
           scope.row.state
@@ -47,7 +56,7 @@ export default {
         this.$parent.getDateList();
         this.$message({
           message: "Canceling date succeeded",
-          type: "error"
+          type: "success"
         });
       } else {
         this.$message({
@@ -66,6 +75,18 @@ export default {
           return "success";
         case "canceled":
           return "info";
+        default:
+          break;
+      }
+    },
+    tagTypeCovidStatus(tagName) {
+      switch (tagName) {
+        case "safe":
+          return "primary";
+        case "close contact":
+          return "warning";
+        case "infected":
+          return "danger";
         default:
           break;
       }

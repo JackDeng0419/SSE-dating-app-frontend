@@ -18,7 +18,7 @@
           {{ userObject.age }}, {{ userObject.gender == 1 ? "Male" : "Female" }}
         </div>
         <div class="location">
-          {{ userObject.location }}
+          {{ userObject.city }}
         </div>
       </div>
     </div>
@@ -40,7 +40,7 @@ export default {
   },
   computed: {
     fullName() {
-      return this.userObject.firstName + " " + this.userObject.lastName;
+      return this.userObject.first_name + " " + this.userObject.last_name;
     }
   }
 };

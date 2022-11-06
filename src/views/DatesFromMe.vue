@@ -35,6 +35,18 @@ export default {
           break;
       }
     },
+    covidStatusToString: function(covid_status) {
+      switch (covid_status) {
+        case 0:
+          return "safe";
+        case 1:
+          return "close contact";
+        case 2:
+          return "infected";
+        default:
+          break;
+      }
+    },
     getDateList: async function() {
       console.log("My likes mounted");
       const { data } = await getDateFromMe();
@@ -45,7 +57,8 @@ export default {
           state: this.stateToString(date.state),
           city: date.city,
           address: date.location,
-          date_id: date._uid
+          date_id: date._uid,
+          covid_status: this.covidStatusToString(date.to_user_covid_status)
         }));
         console.log(this.dateList);
       } else {

@@ -7,38 +7,36 @@
           placeholder="Gender"
           class="gender-select"
         >
-          <el-option key="male" label="Male" value="Male"> </el-option>
-          <el-option key="female" label="Female" value="Female"> </el-option>
-          <el-option key="all" label="All" value="All"> </el-option>
+          <el-option key="male" label="Male" :value="1"> </el-option>
+          <el-option key="female" label="Female" :value="0"> </el-option>
+          <el-option key="all" label="All" :value="3"> </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="Age">
         <el-input-number
-          v-model="formInline.age.min"
+          v-model="formInline.ageMin"
           controls-position="right"
           placeholder="min"
-          :min="14"
+          :min="18"
           :max="150"
           class="age-input"
         ></el-input-number>
         <el-input-number
-          v-model="formInline.age.max"
+          v-model="formInline.ageMax"
           controls-position="right"
-          :min="14"
+          :min="18"
           :max="150"
           class="age-input"
         ></el-input-number>
       </el-form-item>
       <el-form-item label="City">
-        <el-select
-          v-model="formInline.city"
-          placeholder="City"
-          class="city-select"
+        <vue-google-autocomplete
+          id="map"
+          :placeholder="formInline.city"
+          types="(cities)"
+          @placechanged="getAddressData"
         >
-          <el-option label="Shanghai" value="shanghai"></el-option>
-          <el-option label="Beijing" value="beijing"></el-option>
-          <el-option label="Adelaide" value="Adelaide"></el-option>
-        </el-select>
+        </vue-google-autocomplete>
       </el-form-item>
       <el-form-item label="">
         <el-popover
@@ -54,13 +52,13 @@
           >
             <el-tab-pane label="COVID" name="COVID">
               <el-checkbox
-                v-model="formInline.advancedFilter.covid.vaccinated"
+                v-model="formInline.vaccinated"
                 label="Vaccinated"
                 border
                 style="margin-right: 20px"
               ></el-checkbox>
               <el-select
-                v-model="formInline.advancedFilter.covid_status"
+                v-model="formInline.covid_status"
                 placeholder="covid status"
               >
                 <el-option key="safe" label="safe" :value="0">safe</el-option>
@@ -74,27 +72,27 @@
             </el-tab-pane>
             <el-tab-pane label="Hobby" name="Hobby" class="hobby"
               ><el-checkbox
-                v-model="formInline.advancedFilter.hobby.sport"
+                v-model="formInline.sport"
                 label="Sport"
                 border
               ></el-checkbox>
               <el-checkbox
-                v-model="formInline.advancedFilter.hobby.movie"
+                v-model="formInline.movie"
                 label="Movie"
                 border
               ></el-checkbox>
               <el-checkbox
-                v-model="formInline.advancedFilter.hobby.reading"
+                v-model="formInline.reading"
                 label="Reading"
                 border
               ></el-checkbox>
               <el-checkbox
-                v-model="formInline.advancedFilter.hobby.dancing"
+                v-model="formInline.dancing"
                 label="Dancing"
                 border
               ></el-checkbox>
               <el-checkbox
-                v-model="formInline.advancedFilter.hobby.music"
+                v-model="formInline.music"
                 label="Music"
                 border
               ></el-checkbox>
@@ -115,27 +113,24 @@
 </template>
 
 <script>
+import VueGoogleAutocomplete from "vue-google-autocomplete";
+
 export default {
+  components: { VueGoogleAutocomplete },
   data() {
     return {
       formInline: {
         gender: 3,
-        region: "",
         city: "",
-        age: { min: 18, max: 150 },
-        advancedFilter: {
-          covid: {
-            vaccinated: false,
-            covid_status: 0
-          },
-          hobby: {
-            sport: false,
-            movie: false,
-            reading: false,
-            dancing: false,
-            music: false
-          }
-        }
+        ageMin: 18,
+        ageMax: 150,
+        vaccinated: false,
+        covid_status: 0,
+        sport: false,
+        movie: false,
+        reading: false,
+        dancing: false,
+        music: false
       },
       advancedFilterVisible: false,
       advancedFilterDefaultActive: "COVID"
@@ -145,6 +140,9 @@ export default {
     onSubmit() {
       console.log("get user list with filter");
       this.$emit("queryWithFilter", this.formInline);
+    },
+    getAddressData(addressData, placeResultData) {
+      this.formInline.city = placeResultData["formatted_address"];
     }
   }
 };

@@ -28,7 +28,7 @@
             <el-dropdown-item command="logout">log out</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown> -->
-        <el-button>Log out</el-button>
+        <el-button @click="logout">Log out</el-button>
       </div>
     </div>
   </div>
@@ -40,6 +40,12 @@ export default {
     return {
       fullscreen: false
     };
+  },
+  methods: {
+    logout: function() {
+      sessionStorage.clear();
+      this.$router.push({ name: "login" });
+    }
   }
 };
 </script>
