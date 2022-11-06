@@ -251,7 +251,7 @@ export default {
             username: this.login_form.username,
             password: hash.digest("base64")
           };
-          login(data).then(res => {
+          login(this.login_form).then(res => {
             if (Config.verify === true) {
               if (res.data.code === 200) {
                 this.verification_visible_state = true;
@@ -291,19 +291,7 @@ export default {
     submit_signup() {
       this.$refs.signup_form.validate(valid => {
         if (valid) {
-          const hash = crypto.createHash("md5");
-          hash.update(this.signup_form.password);
-          const data = {
-            username: this.signup_form.username,
-            password: hash.digest("base64"),
-            email: this.signup_form.email,
-            code: this.signup_form.code,
-            first_name: this.signup_form.first_name,
-            last_name: this.signup_form.last_name,
-            gender: this.signup_form.gender,
-            age: this.signup_form.age
-          };
-          signup(data).then(
+          signup(this.signup_form).then(
             async res => {
               if (res) {
                 if (res.data.code === 200) {

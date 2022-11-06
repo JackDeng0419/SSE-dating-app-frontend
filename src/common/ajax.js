@@ -64,6 +64,7 @@ axios.interceptors.response.use(
     //  await transfer_key()
     //  ElementUI.Message({ message: 'AES key wrong, please re-submit', type: 'warning' });
     //}
+    ElementUI.Message({ message: error.response.data, type: 'warning' });
     return Promise.reject(error);
   }
 );
