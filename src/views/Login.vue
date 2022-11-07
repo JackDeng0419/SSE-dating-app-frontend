@@ -340,7 +340,7 @@ export default {
       });
     },
     signup_update_code() {
-      const reg =/^([a-zA-Z0-9]+[-_]?)+@[a-zA-Z0-9]+\.[a-z]+$/;
+      const reg =/^[A-Za-z\d]+([-_.][A-Za-z\d]+)+@[a-zA-Z0-9]+\.[a-z]+$/;
       if(this.signup_form.email===''||this.signup_form.email===undefined||this.signup_form.email==null){
         this.$message.error("please input email");
       }
