@@ -231,21 +231,21 @@
         <div class="edit-btn">
           <el-button
             v-if="!hobbiesEditing"
-            @click="edit_covid()"
+            @click="edit_hobbies()"
             :class="{ active: isLoginUser }"
             type="primary"
             >Edit</el-button
           >
           <el-button
             v-if="hobbiesEditing"
-            @click="edit_covid_cancel()"
+            @click="edit_hobbies_cancel()"
             :class="{ active: isLoginUser }"
             type="default"
             >Cancel</el-button
           >
           <el-button
             v-if="hobbiesEditing"
-            @click="edit_covid_confirm()"
+            @click="edit_hobbies_confirm()"
             :class="{ active: isLoginUser }"
             type="primary"
             >Confirm</el-button

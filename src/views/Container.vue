@@ -19,6 +19,7 @@
         ref="dating_form"
         label-width="40px"
         class="date-form"
+        :rules="date_rules"
       >
         <el-form-item prop="date">
           <el-date-picker
@@ -103,6 +104,11 @@ export default {
         location: "",
         maskRequired: false
       },
+      date_rules: {
+        city: { required: true, message: "please input city", trigger: "blur" },
+        dateTime:{ required: true, message: "please input date time", trigger: "blur" },
+        location: { required: true, message: "please input location", trigger: "blur" },
+      },
       target_covid_status: "safe"
     };
   },
@@ -113,36 +119,29 @@ export default {
   },
   methods: {
     submitDate() {
-      console.log(this.dating_form);
-
-      let hasEmptyInput = false;
-      Object.keys(this.dating_form).forEach(key => {
-        if (this.dating_form[key] == "" && !hasEmptyInput) {
-          this.$message({
-            message: key + " cannot be empty",
-            type: "error"
-          });
-          hasEmptyInput = true;
-        }
-      });
-
-      if (!hasEmptyInput) {
-        sendDate({ ...this.dating_form }).then(({ data }) => {
-          console.log(data);
-          if (data.code === 200) {
-            this.$message({
-              message: "Date sent",
-              type: "success"
-            });
-          } else {
-            this.$message({
-              message: "Date sending failed",
-              type: "error"
+      this.$refs.dating_form.validate(valid => {
+        if(valid) {
+          if(this.dating_form.dateTime===""||this.dating_form.dateTime===undefined||this.dating_form.dateTime===null){
+            this.$message.warning("please pick a dating time")
+          }
+          else{
+            sendDate({...this.dating_form}).then(({data}) => {
+              if (data.code === 200) {
+                this.$message({
+                  message: "Date sent",
+                  type: "success"
+                });
+              } else {
+                this.$message({
+                  message: "Date sending failed",
+                  type: "error"
+                });
+              }
+              this.dating_visible_state = false;
             });
           }
-          this.dating_visible_state = false;
-        });
-      }
+        }
+      })
     }
   },
 };

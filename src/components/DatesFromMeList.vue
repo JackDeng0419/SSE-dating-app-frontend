@@ -28,7 +28,7 @@
           title="Are you sure to cancel this?"
           confirm-button-text="Yes"
           cancel-button-text="No"
-          @onConfirm="confirmCancelDate(scope.row.date_id)"
+          @confirm="confirmCancelDate(scope.row.date_id)"
           :ref="`popover-${scope.$index}`"
         >
           <el-button

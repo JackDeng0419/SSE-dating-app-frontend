@@ -31,3 +31,4 @@ export const validateUsername = (rule, value, callback) => {
         callback()
     }
 }
+
