@@ -1,14 +1,14 @@
 export function validateEMail(rule, value,callback) {
-    const reg =/^[A-Za-z\d]+([-_.][A-Za-z\d]+)+@[a-zA-Z0-9]+\.[a-z]+$/;
-    if(value===''||value===undefined||value==null){
-        callback();
-    }else{
-        if (!reg.test(value)){
-            callback(new Error('email format is not correct'));
-        } else {
-            callback();
-        }
-    }
+    // const reg =/^[A-Za-z\d]+([-_.][A-Za-z\d]+)+@[a-zA-Z0-9]+\.[a-z]+$/;
+    // if(value===''||value===undefined||value==null){
+    //     callback();
+    // }else{
+    //     if (!reg.test(value)){
+    //         callback(new Error('email format is not correct'));
+    //     } else {
+    //         callback();
+    //     }
+    // }
 }
 export const validatePsdReg = (rule, value, callback) => {
     if (!value) {

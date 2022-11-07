@@ -30,8 +30,13 @@
         </el-form-item>
 
         <div class="login-btn">
-          <el-button v-preventClick @click="submit_login()" type="primary">Confirm</el-button>
-          <el-button v-preventClick @click="signup_visible_state = true" type="primary"
+          <el-button v-preventClick @click="submit_login()" type="primary"
+            >Confirm</el-button
+          >
+          <el-button
+            v-preventClick
+            @click="signup_visible_state = true"
+            type="primary"
             >Signup</el-button
           >
         </div>
@@ -166,8 +171,8 @@ import Config from "@/common/config";
 import crypto from "crypto";
 import { genTestUserSig } from "@/common/GenerateTestUserSig";
 import TIM from "tim-js-sdk";
-import {check_key} from "@/common/ajax";
-import {validateEMail, validatePsdReg, validateUsername} from "@/api/valid";
+import { check_key } from "@/common/ajax";
+import { validateEMail, validatePsdReg, validateUsername } from "@/api/valid";
 
 export default {
   data: function() {
@@ -195,25 +200,24 @@ export default {
       login_rules: {
         username: [
           { required: true, message: "please input username", trigger: "blur" },
-          { validator: validateUsername, trigger: 'blur'}
+          { validator: validateUsername, trigger: "blur" }
         ],
         password: [
           { required: true, message: "please input password", trigger: "blur" },
-          { validator: validatePsdReg, trigger: 'blur'}
+          { validator: validatePsdReg, trigger: "blur" }
         ]
       },
       signup_rules: {
         username: [
           { required: true, message: "please input username", trigger: "blur" },
-          { validator: validateUsername, trigger: 'blur'}
+          { validator: validateUsername, trigger: "blur" }
         ],
         password: [
           { required: true, message: "please input password", trigger: "blur" },
-          { validator: validatePsdReg, trigger: 'blur'}
+          { validator: validatePsdReg, trigger: "blur" }
         ],
         email: [
-          { required: true, message: "please input email", trigger: "blur" },
-          { validator: validateEMail, trigger: 'blur'}
+          { required: true, message: "please input email", trigger: "blur" }
         ],
         code: [
           {
@@ -239,7 +243,7 @@ export default {
     };
   },
   async created() {
-    await check_key()
+    await check_key();
   },
   methods: {
     submit_login() {
@@ -279,14 +283,17 @@ export default {
         }
       });
     },
-    update_nikename(nikename){
-      this.tim.updateMyProfile({
-        nick: nikename,//this.signup_form.first_name + ' '+this.signup_form.last_name,
-      }).then(function(imResponse) {
-        console.log(imResponse.data); // 更新资料成功
-      }).catch(function(imError) {
-        console.warn('updateMyProfile error:', imError); // 更新资料失败的相关信息
-      });
+    update_nikename(nikename) {
+      this.tim
+        .updateMyProfile({
+          nick: nikename //this.signup_form.first_name + ' '+this.signup_form.last_name,
+        })
+        .then(function(imResponse) {
+          console.log(imResponse.data); // 更新资料成功
+        })
+        .catch(function(imError) {
+          console.warn("updateMyProfile error:", imError); // 更新资料失败的相关信息
+        });
     },
     submit_signup() {
       this.$refs.signup_form.validate(valid => {
@@ -300,21 +307,28 @@ export default {
                   const userID = res.data.data._uid.toString();
                   const userSig = genTestUserSig(userID);
 
-                  this.tim.login({
-                    userID: userID,
-                    userSig: userSig
-                  }).then(function (imResponse) {
-                    if (imResponse.data.repeatLogin === true) {
-                      console.log(imResponse.data.errorInfo);
-                    }
-                  }).catch(function (imError) {
-                    console.warn("login error:", imError); // 登录失败的相关信息
-                  });
+                  this.tim
+                    .login({
+                      userID: userID,
+                      userSig: userSig
+                    })
+                    .then(function(imResponse) {
+                      if (imResponse.data.repeatLogin === true) {
+                        console.log(imResponse.data.errorInfo);
+                      }
+                    })
+                    .catch(function(imError) {
+                      console.warn("login error:", imError); // 登录失败的相关信息
+                    });
                   const self = this;
                   this.tim.on(TIM.EVENT.SDK_READY, function(event) {
                     // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
                     console.log("SDK_READY ===================", event);
-                    self.update_nikename(self.signup_form.first_name+" "+self.signup_form.last_name)
+                    self.update_nikename(
+                      self.signup_form.first_name +
+                        " " +
+                        self.signup_form.last_name
+                    );
                   });
                 } else {
                   this.$message.error(res.data.message);
@@ -340,25 +354,23 @@ export default {
       });
     },
     signup_update_code() {
-      const reg =/^[A-Za-z\d]+([-_.][A-Za-z\d]+)+@[a-zA-Z0-9]+\.[a-z]+$/;
-      if(this.signup_form.email===''||this.signup_form.email===undefined||this.signup_form.email==null){
+      // const reg = /^[A-Za-z\d]+([-_.][A-Za-z\d]+)+@[a-zA-Z0-9]+\.[a-z]+$/;
+      if (
+        this.signup_form.email === "" ||
+        this.signup_form.email === undefined ||
+        this.signup_form.email == null
+      ) {
         this.$message.error("please input email");
-      }
-      else{
-        if (!reg.test(this.signup_form.email)){
-          this.$message.error("email format is not correct");
-        }
-        else{
-          signup_apply_code({ email: this.signup_form.email }).then(res => {
-            if (res) {
-              if (res.data.code === 200) {
-                this.$message.success(res.data.message);
-              } else {
-                this.$message.error(res.data.message);
-              }
+      } else {
+        signup_apply_code({ email: this.signup_form.email }).then(res => {
+          if (res) {
+            if (res.data.code === 200) {
+              this.$message.success(res.data.message);
+            } else {
+              this.$message.error(res.data.message);
             }
-          });
-        }
+          }
+        });
       }
     }
   }
