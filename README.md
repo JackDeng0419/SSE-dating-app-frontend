@@ -5,7 +5,7 @@
 2. Because this application uses self-signed HTTPS SSL certificate, so you need to manually trust this domain at first. 
     1. Use the browser to request `https://34.151.106.205:7001/login/RSA`, just like this:
     ![](./WechatIMG985.jpeg)
-    2. After that, you can use `https://34.151.106.205:8080/login` to start using the app, you might need to trust the domain again by doing like this: 
+    2. After that, you can use `https://34.151.106.205:8080` to start using the app, you might need to trust the domain again by doing like this: 
     ![](./WechatIMG986.jpeg)
 3. Then you will see the login page, you can register a new account or use the test account:
 ![](./WechatIMG987.png)
@@ -30,7 +30,7 @@ Verification Code: 123456
 
 6. After compiling successfully, you will see the follow information: 
     ![successful compile](successful_compile.png)
-7. Then use chrome to run the frontend application using the URL: `http://localhost:8080/login`
+7. Then use chrome to run the frontend application using the URL: `https://localhost:8080`
 
 ## Application guide
 1. In the login page, you can register a new account, or use the test account:
