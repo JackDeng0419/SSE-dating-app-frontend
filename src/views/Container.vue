@@ -83,7 +83,7 @@
 import chat from "@/components/chat";
 import SideBar from "@/components/SideBar";
 import HeadBar from "@/components/HeadBar";
-import { check } from "@/common/ajax";
+import {check_key, check_status} from "@/common/ajax";
 import { sendDate } from "@/api/date";
 
 export default {
@@ -106,6 +106,11 @@ export default {
       target_covid_status: "safe"
     };
   },
+  async mounted() {
+    await check_key();
+    await check_status();
+    window.parentMounted = this._isMounted;
+  },
   methods: {
     submitDate() {
       console.log(this.dating_form);
@@ -124,7 +129,7 @@ export default {
       if (!hasEmptyInput) {
         sendDate({ ...this.dating_form }).then(({ data }) => {
           console.log(data);
-          if (data.code == 200) {
+          if (data.code === 200) {
             this.$message({
               message: "Date sent",
               type: "success"
@@ -140,14 +145,6 @@ export default {
       }
     }
   },
-  async created() {
-    await check();
-    if (sessionStorage.getItem("userid") !== null) {
-      await this.$router.push(
-        "/my-profile/" + sessionStorage.getItem("userid")
-      );
-    }
-  }
 };
 </script>
 <style scoped>

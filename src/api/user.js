@@ -14,3 +14,7 @@ export const signup_apply_code = (formdata) =>{
 export const apply_code = () => {
   return pureget("/login/code");
 };
+
+export const logout = () =>{
+  return pureget("/login/logout")
+}

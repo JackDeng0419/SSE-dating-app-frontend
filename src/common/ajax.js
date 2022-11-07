@@ -10,7 +10,7 @@ import ElementUI from "element-ui";
 axios.defaults.withCredentials = true;
 axios.interceptors.request.use(function(config) {
   //比如是否需要设置 token
-  if(config.url!==Config.backEndUrl + "/login/RSA" && config.url!==Config.backEndUrl + "/login/AES"){
+  if(config.url!==Config.backEndUrl + "/login/RSA"){
     config.headers._csrf = sessionStorage.getItem("csrf")
   }
   return config
@@ -25,10 +25,16 @@ axios.interceptors.response.use(
         response.config.url === Config.backEndUrl + "/login/code" ||
         response.config.url === Config.backEndUrl + "/login/signup/code"
     ) {
-      if (response.data.data !== undefined) {
-        const plaintext = AES_decrypt(response.data.data);
-        response.data.data = JSON.parse(plaintext);
+      if(response.data.code === 403){
+        await transfer_key()
       }
+      else{
+        if (response.data.data !== undefined) {
+          const plaintext = AES_decrypt(response.data.data);
+          response.data.data = JSON.parse(plaintext);
+        }
+      }
+
     } else {
       if (
           response.config.url !== Config.backEndUrl + "/login/RSA"
@@ -37,6 +43,10 @@ axios.interceptors.response.use(
           await transfer_key()
           ElementUI.Message({ message: 'session expired, please login', type: 'warning' });
           await router.push("/login")
+        }
+        else if(response.data.code === 403){
+          await transfer_key()
+          ElementUI.Message({ message: 'AES key wrong, please re-submit', type: 'warning' });
         }
         else{
           if (response.data.data !== undefined) {
@@ -49,10 +59,12 @@ axios.interceptors.response.use(
     return response;
   },
   async error => {
-    if(error.response.status === 403){
-      await transfer_key()
-      ElementUI.Message({ message: 'AES key wrong, please re-submit', type: 'warning' });
-    }
+    console.log(error.response.status)
+    //if(error.response.status === 403){
+    //  await transfer_key()
+    //  ElementUI.Message({ message: 'AES key wrong, please re-submit', type: 'warning' });
+    //}
+    ElementUI.Message({ message: error.response.data, type: 'warning' });
     return Promise.reject(error);
   }
 );
@@ -119,7 +131,7 @@ export const pre_post = function(url, RSA_key) {
 };
 
 export const check_key = async function() {
-  if(sessionStorage.getItem("AES_key")===null || sessionStorage.getItem("csrf")===null){
+  if(sessionStorage.getItem("AES_key")===null || sessionStorage.getItem("csrf")===null || sessionStorage.getItem("AES_iv")===null){
     await transfer_key();
   }
 };
@@ -144,9 +156,9 @@ export const transfer_key = async function() {
   await sessionStorage.setItem("AES_iv", crypto.randomBytes(12).toString("base64"));
   await pre_get("/login/RSA").then(async res => {
     const RSA_key = res.data.data.public_key;
-    await pre_post("/login/AES", RSA_key).then(async res =>{
-      sessionStorage.setItem("csrf", res.data.data._csrf)
-    });
+    console.log("1-----------------------",res)
+    sessionStorage.setItem("csrf", res.data.data._csrf)
+    await pre_post("/login/AES", RSA_key);
   });
 }
 

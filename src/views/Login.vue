@@ -30,8 +30,8 @@
         </el-form-item>
 
         <div class="login-btn">
-          <el-button @click="submit_login()" type="primary">Confirm</el-button>
-          <el-button @click="signup_visible_state = true" type="primary"
+          <el-button v-preventClick @click="submit_login()" type="primary">Confirm</el-button>
+          <el-button v-preventClick @click="signup_visible_state = true" type="primary"
             >Signup</el-button
           >
         </div>
@@ -166,6 +166,8 @@ import Config from "@/common/config";
 import crypto from "crypto";
 import { genTestUserSig } from "@/common/GenerateTestUserSig";
 import TIM from "tim-js-sdk";
+import {check_key} from "@/common/ajax";
+import {validateEMail, validatePsdReg, validateUsername} from "@/api/valid";
 
 export default {
   data: function() {
@@ -192,21 +194,26 @@ export default {
       },
       login_rules: {
         username: [
-          { required: true, message: "please input username", trigger: "blur" }
+          { required: true, message: "please input username", trigger: "blur" },
+          { validator: validateUsername, trigger: 'blur'}
         ],
         password: [
-          { required: true, message: "please input password", trigger: "blur" }
+          { required: true, message: "please input password", trigger: "blur" },
+          { validator: validatePsdReg, trigger: 'blur'}
         ]
       },
       signup_rules: {
         username: [
-          { required: true, message: "please input username", trigger: "blur" }
+          { required: true, message: "please input username", trigger: "blur" },
+          { validator: validateUsername, trigger: 'blur'}
         ],
         password: [
-          { required: true, message: "please input password", trigger: "blur" }
+          { required: true, message: "please input password", trigger: "blur" },
+          { validator: validatePsdReg, trigger: 'blur'}
         ],
         email: [
-          { required: true, message: "please input email", trigger: "blur" }
+          { required: true, message: "please input email", trigger: "blur" },
+          { validator: validateEMail, trigger: 'blur'}
         ],
         code: [
           {
@@ -231,6 +238,9 @@ export default {
       }
     };
   },
+  async created() {
+    await check_key()
+  },
   methods: {
     submit_login() {
       this.$refs.login_form.validate(valid => {
@@ -241,11 +251,11 @@ export default {
             username: this.login_form.username,
             password: hash.digest("base64")
           };
-          login(data).then(res => {
+          login(this.login_form).then(res => {
             if (Config.verify === true) {
               if (res.data.code === 200) {
                 this.verification_visible_state = true;
-                console.log("email", res.data.data.email);
+                this.$message.success(res.data.message);
                 this.verify_form.email = res.data.data.email;
               } else {
                 this.$message.error(res.data.message);
@@ -269,92 +279,43 @@ export default {
         }
       });
     },
+    update_nikename(nikename){
+      this.tim.updateMyProfile({
+        nick: nikename,//this.signup_form.first_name + ' '+this.signup_form.last_name,
+      }).then(function(imResponse) {
+        console.log(imResponse.data); // 更新资料成功
+      }).catch(function(imError) {
+        console.warn('updateMyProfile error:', imError); // 更新资料失败的相关信息
+      });
+    },
     submit_signup() {
       this.$refs.signup_form.validate(valid => {
         if (valid) {
-          const hash = crypto.createHash("md5");
-          hash.update(this.signup_form.password);
-          const data = {
-            username: this.signup_form.username,
-            password: hash.digest("base64"),
-            email: this.signup_form.email,
-            code: this.signup_form.code,
-            first_name: this.signup_form.first_name,
-            last_name: this.signup_form.last_name,
-            gender: this.signup_form.gender,
-            age: this.signup_form.age
-          };
-          signup(data).then(
-            res => {
+          signup(this.signup_form).then(
+            async res => {
               if (res) {
                 if (res.data.code === 200) {
                   this.signup_visible_state = false;
-                  this.$message.success(res.data.message);
-                  const self = this;
-                  const username = res.data.data.username;
-                  const userSig = genTestUserSig(username);
-                  console.log("logData =============", username, userSig);
+                  this.$message.success(this.signup_form.last_name);
+                  const userID = res.data.data._uid.toString();
+                  const userSig = genTestUserSig(userID);
 
-                  // 监听事件
+                  this.tim.login({
+                    userID: userID,
+                    userSig: userSig
+                  }).then(function (imResponse) {
+                    if (imResponse.data.repeatLogin === true) {
+                      console.log(imResponse.data.errorInfo);
+                    }
+                  }).catch(function (imError) {
+                    console.warn("login error:", imError); // 登录失败的相关信息
+                  });
+                  const self = this;
                   this.tim.on(TIM.EVENT.SDK_READY, function(event) {
                     // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
                     console.log("SDK_READY ===================", event);
-                    self.hlData();
+                    self.update_nikename(self.signup_form.first_name+" "+self.signup_form.last_name)
                   });
-
-                  this.tim.on(TIM.EVENT.ERROR, function(event) {
-                    // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
-                    console.error("ERROR ===================", event);
-                  });
-
-                  this.tim.on(TIM.EVENT.KICKED_OUT, function(event) {
-                    // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
-                    console.error("KICKED_OUT ===================", event);
-                  });
-
-                  this.tim.on(TIM.EVENT.NET_STATE_CHANGE, function(event) {
-                    // 收到离线消息和会话列表同步完毕通知，接入侧可以调用 sendMessage 等需要鉴权的接口
-                    console.error(
-                      "NET_STATE_CHANGE ===================",
-                      event
-                    );
-                  });
-
-                  console.log(
-                    "this.TIM.EVENT.MESSAGE_RECEIVED",
-                    TIM.EVENT.MESSAGE_RECEIVED
-                  );
-                  this.tim.on(TIM.EVENT.MESSAGE_RECEIVED, function(event) {
-                    // 收到推送的单聊、群聊、群提示、群系统通知的新消息，可通过遍历 event.data 获取消息列表数据并渲染到页面
-                    console.log("MESSAGE_RECEIVED ===================");
-                    self.hlData();
-                    if (self.hList) {
-                      if (event.data[0].from === self.hList.userID) {
-                        // console.log('这是正在聊天的聊天界面')
-                        // console.log(event.data[0].conversationID)
-                        self.read(event.data[0].conversationID);
-                        self.hList.messageList.push(event.data[0]);
-                        self.below();
-                      }
-                    }
-                  });
-
-                  let promise = this.tim.login({
-                    username: username,
-                    userSig: userSig
-                  });
-                  promise
-                    .then(function(imResponse) {
-                      console.log("login success ======================");
-                      //获取会话列表
-                      if (imResponse.data.repeatLogin === true) {
-                        // 标识账号已登录，本次登录操作为重复登录。v2.5.1 起支持
-                        console.log(imResponse.data.errorInfo);
-                      }
-                    })
-                    .catch(function(imError) {
-                      console.warn("login error:", imError); // 登录失败的相关信息
-                    });
                 } else {
                   this.$message.error(res.data.message);
                 }
@@ -379,18 +340,25 @@ export default {
       });
     },
     signup_update_code() {
-      if (this.signup_form.email === "") {
-        this.$message.error("please input the email");
-      } else {
-        signup_apply_code({ email: this.signup_form.email }).then(res => {
-          if (res) {
-            if (res.data.code === 200) {
-              this.$message.success(res.data.message);
-            } else {
-              this.$message.error(res.data.message);
+      const reg =/^([a-zA-Z0-9]+[-_]?)+@[a-zA-Z0-9]+\.[a-z]+$/;
+      if(this.signup_form.email===''||this.signup_form.email===undefined||this.signup_form.email==null){
+        this.$message.error("please input email");
+      }
+      else{
+        if (!reg.test(this.signup_form.email)){
+          this.$message.error("email format is not correct");
+        }
+        else{
+          signup_apply_code({ email: this.signup_form.email }).then(res => {
+            if (res) {
+              if (res.data.code === 200) {
+                this.$message.success(res.data.message);
+              } else {
+                this.$message.error(res.data.message);
+              }
             }
-          }
-        });
+          });
+        }
       }
     }
   }

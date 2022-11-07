@@ -6,34 +6,15 @@
     <div class="logo">dating app</div>
     <div class="head-right">
       <div class="head-user-con">
-        <!-- <div class="btn-fullscreen">
-          <el-tooltip
-            :content="fullscreen ? `退出全屏` : `全屏`"
-            effect="dark"
-            placement="bottom"
-          >
-            <i class="el-icon-rank"></i>
-          </el-tooltip>
-        </div>
-
-        <div class="user-avatar">
-          <img src="../assets/avatars.jpg" />
-        </div>
-
-        <el-dropdown @command="handleCommand" class="user-name" trigger="click">
-          <span class="el-dropdown-link">
-            <i class="el-icon-caret-bottom"></i>
-          </span>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="logout">log out</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown> -->
         <el-button @click="logout">Log out</el-button>
+        <el-button @click="chat">chat</el-button>
       </div>
     </div>
   </div>
 </template>
 <script>
+import {logout} from "@/api/user";
+
 export default {
   name: "Header",
   data() {
@@ -42,9 +23,25 @@ export default {
     };
   },
   methods: {
-    logout: function() {
-      sessionStorage.clear();
-      this.$router.push({ name: "login" });
+    logout(){
+      logout().then(res=>{
+        if(res.data.code===200){
+          sessionStorage.clear()
+          this.$router.push("/login")
+          this.$message.success(res.data.message)
+        }
+        else{
+          this.$message.error(res.data.message)
+        }
+      })
+    },
+    chat(){
+      this.$parent.$children[2].toUserId = null;
+      this.$parent.$children[2].rListOff = true;
+      this.$parent.$children[2].chat_visible = true;
+      this.$parent.$children[2].session_box_width='260px'
+      this.$parent.$children[2].chat_box_width='70%'
+      this.$parent.$children[2].hlData()
     }
   }
 };

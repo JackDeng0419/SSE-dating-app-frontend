@@ -25,6 +25,20 @@ tim.setLogLevel(0); // 普通级别，日志量较多，接入时建议使用
 // 注册 COS SDK 插件
 tim.registerPlugin({ "cos-js-sdk": COS });
 Vue.prototype.tim = tim;
+
+Vue.directive('preventClick', {
+  inserted(el, binding) {
+    el.addEventListener('click', () => {
+      if (!el.disabled) {
+        el.disabled = true
+        setTimeout(() => {
+          el.disabled = false
+        }, binding.value || 2000)
+      }
+    })
+  }
+});
+
 new Vue({
   router,
   store,

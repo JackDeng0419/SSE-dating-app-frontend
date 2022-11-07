@@ -2,13 +2,14 @@
   <div class="chat">
     <el-dialog
       :visible.sync="chat_visible"
-      width="70%"
+      :width="chat_box_width"
       :before-close="handleClose"
+      title="chat"
     >
       <el-row :span="24">
         <div class="chat_box" v-if="chat_visible">
-          <div class="session_box">
-            <div class="t_left_bot" v-if="rListOff">
+          <div class="session_box" :style="'width:'+session_box_width">
+            <div class="t_left_bot" v-if="rListOff" >
               <div
                 v-for="(item, index) in rList"
                 :key="index"
@@ -27,7 +28,7 @@
                   style="background: #c1c1c1;"
                   alt=""
                 />
-                <div>{{ item.userProfile.userID }}</div>
+                <div>{{ item.userProfile.nick }}</div>
                 <div v-show="item.lastMessage">
                   {{ item.lastMessage.messageForShow }}
                 </div>
@@ -86,15 +87,13 @@
             <div class="t_right_bot">
               <div>
                 <textarea
-                  placeholder="请输入消息内容，最多可输入200个字"
+                  placeholder="please input message, max 200 characters"
                   v-model="textarea"
                   maxlength="200"
                   @keydown="messageSendlisten"
                 ></textarea>
                 <!-- <div class="t_limit">当前还可发送{{200-(textarea.length)}}个字</div> -->
-                <el-button class="r_i" @click="setButton" type="primary"
-                  >发送</el-button
-                >
+                <el-button class="r_i" v-if="toUserId!==null" @click="setButton" type="primary">send</el-button>
               </div>
             </div>
           </div>
@@ -116,6 +115,8 @@ export default {
   data() {
     return {
       chat_visible: false,
+      session_box_width:"10px",
+      chat_box_width:"70%",
       defaultAvatar:
         "https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=1651318081,2860235060&fm=26&gp=0.jpg", //默认头像,如果用户没有上传头像或者头像路径错误展示这个路径
       myAvatar:
@@ -127,7 +128,7 @@ export default {
       isActive: "1",
       loading: false, //加载中
       textarea: "", //输入信息
-      rListOff: false,
+      rListOff: true,
       rRightOff: false,
       // emojiMap: emojiMap,
       // emojiUrl: emojiUrl,
@@ -161,11 +162,18 @@ export default {
       }
     }
   },
-  created() {
-    this.logData(
-      sessionStorage.getItem("userid"),
-      genTestUserSig(sessionStorage.getItem("userid"))
-    );
+  mounted() {
+    if(sessionStorage.getItem("userid")!==null){
+      let pMountedTimer = window.setInterval(() => {
+        if (window.parentMounted) {
+          window.clearInterval(pMountedTimer);
+          this.logData(
+              sessionStorage.getItem("userid"),
+              genTestUserSig(sessionStorage.getItem("userid"))
+          );
+        }
+      }, 500);
+    }
   },
   methods: {
     seeMore() {
@@ -232,9 +240,7 @@ export default {
     },
     //消息已读
     read(id) {
-      let promise = this.tim.setMessageRead({ conversationID: id });
-      promise
-        .then(function(imResponse) {
+      let promise = this.tim.setMessageRead({ conversationID: id }).then(function(imResponse) {
           // 已读上报成功，指定 ID 的会话的 unreadCount 属性值被置为0
           console.warn("setMessageRead error:", imResponse);
         })
@@ -248,9 +254,10 @@ export default {
       const self = this;
       if (self.textarea.split(" ").join("").length === 0)
         return this.$message({
-          message: "请输入正确信息",
+          message: "please input correct message",
           type: "warning"
         });
+      console.log("1111111111111111111111",this.toUserId)
       let message = this.tim.createTextMessage({
         to: this.toUserId, //self.hList.userID ? self.hList.userID : "约定的名字_" + self.userIdMsg,
         // to: "youqianchengjin_" + self.userIdMsg,
@@ -260,16 +267,11 @@ export default {
         }
       });
       // 发送消息
-      this.tim
-        .sendMessage(message)
-        .then(function(imResponse) {
+      this.tim.sendMessage(message).then(function(imResponse) {
           // 发送成功
           self.textarea = "";
-          if (self.hList.messageList == undefined) {
-            self.hList.messageList = [];
-          }
           self.hList.messageList.push(imResponse.data.message);
-          self.below();
+          self.below(imResponse);
         })
         .catch(function(imError) {
           // 发送失败
@@ -279,17 +281,11 @@ export default {
     //获取会话资料
     setZi(conversationID, userID, avatar, chatName) {
       const self = this;
-      if (userID === self.toUserId) {
-        return;
-      } else {
-        self.hList = [];
-      }
       self.toUserId = userID;
       self.avatar = avatar;
       self.isActive = conversationID;
       self.chatName = chatName || userID;
-      this.tim
-        .getMessageList({
+      this.tim.getMessageList({
           conversationID: conversationID,
           count: 15
         })
@@ -301,7 +297,6 @@ export default {
           hList.userID = userID; // 点击进去的用户id。
           hList.conversationID = conversationID;
           self.hList = hList;
-          console.log("hlist==========", hList.messageList);
           if (self.hList) self.rRightOff = true;
           self.below();
           //设置消息已读
@@ -311,15 +306,17 @@ export default {
     //获取会话列表
     hlData() {
       const self = this;
-      this.tim
-        .getConversationList()
-        .then(function(imResponse) {
-          console.log(
-            "sessionlist===============",
-            imResponse.data.conversationList
-          );
+      this.tim.getConversationList().then(function(imResponse) {
           self.rList = imResponse.data.conversationList;
-          self.rListOff = true;
+          if(imResponse.data.conversationList.length!==0){
+            this.toUserId = imResponse.data.conversationList[0].userProfile.userID;
+            self.setZi(
+                imResponse.data.conversationList[0].conversationID,
+                imResponse.data.conversationList[0].userProfile.userID,
+                imResponse.data.conversationList[0].userProfile.avatar,
+                imResponse.data.conversationList[0].userProfile.nick
+            )
+          }
         })
         .catch(function(imError) {
           console.log(imError);
@@ -351,18 +348,12 @@ export default {
         console.error("NET_STATE_CHANGE ===================", event);
       });
 
-      console.log(
-        "this.TIM.EVENT.MESSAGE_RECEIVED",
-        TIM.EVENT.MESSAGE_RECEIVED
-      );
       this.tim.on(TIM.EVENT.MESSAGE_RECEIVED, function(event) {
         // 收到推送的单聊、群聊、群提示、群系统通知的新消息，可通过遍历 event.data 获取消息列表数据并渲染到页面
         console.log("MESSAGE_RECEIVED ===================");
         self.hlData();
         if (self.hList) {
           if (event.data[0].from === self.hList.userID) {
-            // console.log('这是正在聊天的聊天界面')
-            // console.log(event.data[0].conversationID)
             self.read(event.data[0].conversationID);
             self.hList.messageList.push(event.data[0]);
             self.below();
@@ -370,9 +361,7 @@ export default {
         }
       });
 
-      let promise = this.tim.login({ userID: userID, userSig: userSig });
-      promise
-        .then(function(imResponse) {
+      this.tim.login({ userID: userID, userSig: userSig }).then(function(imResponse) {
           console.log("login success ======================");
           //获取会话列表
           if (imResponse.data.repeatLogin === true) {
@@ -389,13 +378,15 @@ export default {
     }
   },
   watch: {
-    $route(to) {
-      const string = to.path.split("/");
-      if (string.length === 3) {
-        if (string[1] === "my-profile") {
-          const id = string[2];
-          this.toUserId = id;
-        }
+    rListOff: function(newval, oldval){
+      if(newval===false){
+        this.session_box_width='0px'
+        this.chat_box_width='50%'
+      }
+      else{
+        this.session_box_width='260px'
+        this.chat_box_width='70%'
+        this.hlData()
       }
     }
   },
